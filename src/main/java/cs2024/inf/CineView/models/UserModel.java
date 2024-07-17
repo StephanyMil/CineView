@@ -1,13 +1,12 @@
 package cs2024.inf.CineView.models;
 
 import jakarta.persistence.*;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table(name = "USER-DB")
+@Table(name = "users")
 public class UserModel implements Serializable {
 
     @Id
@@ -17,6 +16,16 @@ public class UserModel implements Serializable {
     private String email;
     private String password;
     private Date birthDate;
+
+    // Getters and Setters
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -42,10 +51,6 @@ public class UserModel implements Serializable {
         this.password = password;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
     public Date getBirthDate() {
         return birthDate;
     }
@@ -53,5 +58,4 @@ public class UserModel implements Serializable {
     public void setBirthDate(Date birthDate) {
         this.birthDate = birthDate;
     }
-
 }
