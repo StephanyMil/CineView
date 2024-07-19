@@ -68,4 +68,13 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
     }
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            SecurityContextHolder.getContext().setAuthentication(null);
+            return ResponseEntity.ok("User logged out successfully.");
+        }
+        return ResponseEntity.ok("User was not logged in.");
+    }
 }
