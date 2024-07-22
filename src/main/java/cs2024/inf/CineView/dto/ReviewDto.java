@@ -2,53 +2,70 @@ package cs2024.inf.CineView.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.UUID;  // Adicionando a importação necessária
 
 public class ReviewDto {
 
-    @NotBlank
-    private String title;
-
-    @NotBlank
-    private String reviewText;
-
     @NotNull
-    private UUID userId;
-
+    private UUID idFilme;  // Adicionando o campo idFilme
+    @NotBlank
+    private String usuario;
     @NotNull
-    private UUID movieId;
+    private LocalDate dataAssistido;
+    @NotNull
+    private int nota;
+    @NotBlank
+    private String comentario;
+    @NotNull
+    private LocalDate dataReview;
 
-    // Getters e setters
-
-    public String getTitle() {
-        return title;
+    // Getters e Setters
+    public UUID getIdFilme() {
+        return idFilme;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setIdFilme(UUID idFilme) {
+        this.idFilme = idFilme;
     }
 
-    public String getReviewText() {
-        return reviewText;
+    public String getUsuario() {
+        return usuario;
     }
 
-    public void setReviewText(String reviewText) {
-        this.reviewText = reviewText;
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public LocalDate getDataAssistido() {
+        return dataAssistido;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public void setDataAssistido(LocalDate dataAssistido) {
+        this.dataAssistido = dataAssistido;
     }
 
-    public UUID getMovieId() {
-        return movieId;
+    public int getNota() {
+        return nota;
     }
 
-    public void setMovieId(UUID movieId) {
-        this.movieId = movieId;
+    public void setNota(int nota) {
+        this.nota = nota;
+    }
+
+    public String getComentario() {
+        return comentario;
+    }
+
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
+    }
+
+    public LocalDate getDataReview() {
+        return dataReview;
+    }
+
+    public void setDataReview(LocalDate dataReview) {
+        this.dataReview = dataReview;
     }
 }

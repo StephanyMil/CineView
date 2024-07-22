@@ -25,7 +25,6 @@ public class ReviewController {
     public ResponseEntity<ReviewModel> saveReview(@RequestBody @Valid ReviewDto reviewDto) {
         var reviewModel = new ReviewModel();
         BeanUtils.copyProperties(reviewDto, reviewModel);
-        reviewModel.setContent(reviewDto.getReviewText());  // Map reviewText to content
         return ResponseEntity.status(HttpStatus.CREATED).body(reviewRepository.save(reviewModel));
     }
 
@@ -51,7 +50,6 @@ public class ReviewController {
         }
         var reviewModel = reviewFound.get();
         BeanUtils.copyProperties(reviewDto, reviewModel);
-        reviewModel.setContent(reviewDto.getReviewText());  // Map reviewText to content
         return ResponseEntity.status(HttpStatus.OK).body(reviewRepository.save(reviewModel));
     }
 
@@ -63,5 +61,14 @@ public class ReviewController {
         }
         reviewRepository.delete(reviewFound.get());
         return ResponseEntity.status(HttpStatus.OK).body("Review was deleted successfully");
+    }
+
+    @GetMapping("/api/{id_filme}/reviews")
+    public ResponseEntity<Object> getReviewsByIdFilme(@PathVariable(value = "id_filme") UUID idFilme) {
+        List<ReviewModel> reviews = reviewRepository.findByIdFilme(idFilme);
+        if (reviews.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No reviews found for this movie");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(reviews);
     }
 }

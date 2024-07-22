@@ -1,64 +1,77 @@
 package cs2024.inf.CineView.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import java.util.UUID;
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.util.UUID;  // Adicionando a importação necessária
 
 @Entity
+@Table(name = "reviews")
 public class ReviewModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+    private UUID idFilme;  // Adicionando o campo idFilme
+    private String usuario;
+    private LocalDate dataAssistido;
+    private int nota;
+    private String comentario;
+    private LocalDate dataReview;
 
-    private String title;
-    private String content;
-    private UUID userId;
-    private UUID movieId;
-
-    // Getters and setters
-
-    // Getters
+    // Getters e Setters
     public UUID getId() {
         return id;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public UUID getMovieId() {
-        return movieId;
-    }
-
-    // Setters
     public void setId(UUID id) {
         this.id = id;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public UUID getIdFilme() {
+        return idFilme;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setIdFilme(UUID idFilme) {
+        this.idFilme = idFilme;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public String getUsuario() {
+        return usuario;
     }
 
-    public void setMovieId(UUID movieId) {
-        this.movieId = movieId;
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
+    }
+
+    public LocalDate getDataAssistido() {
+        return dataAssistido;
+    }
+
+    public void setDataAssistido(LocalDate dataAssistido) {
+        this.dataAssistido = dataAssistido;
+    }
+
+    public int getNota() {
+        return nota;
+    }
+
+    public void setNota(int nota) {
+        this.nota = nota;
+    }
+
+    public String getComentario() {
+        return comentario;
+    }
+
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
+    }
+
+    public LocalDate getDataReview() {
+        return dataReview;
+    }
+
+    public void setDataReview(LocalDate dataReview) {
+        this.dataReview = dataReview;
     }
 }
