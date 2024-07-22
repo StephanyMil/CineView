@@ -16,6 +16,7 @@ public class ReviewModel {
     private String title;
     private String content;
     private UUID userId;
+    private UUID movieId;
 
     // Getters and setters
 
@@ -36,6 +37,10 @@ public class ReviewModel {
         return userId;
     }
 
+    public UUID getMovieId() {
+        return movieId;
+    }
+
     // Setters
     public void setId(UUID id) {
         this.id = id;
@@ -51,5 +56,9 @@ public class ReviewModel {
 
     public void setUserId(UUID userId) {
         this.userId = userId;
+    }
+
+    public void setMovieId(UUID movieId) {
+        this.movieId = movieId;
     }
 }

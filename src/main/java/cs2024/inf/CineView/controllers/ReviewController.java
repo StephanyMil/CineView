@@ -25,6 +25,7 @@ public class ReviewController {
     public ResponseEntity<ReviewModel> saveReview(@RequestBody @Valid ReviewDto reviewDto) {
         var reviewModel = new ReviewModel();
         BeanUtils.copyProperties(reviewDto, reviewModel);
+        reviewModel.setContent(reviewDto.getReviewText());  // Map reviewText to content
         return ResponseEntity.status(HttpStatus.CREATED).body(reviewRepository.save(reviewModel));
     }
 
@@ -50,6 +51,7 @@ public class ReviewController {
         }
         var reviewModel = reviewFound.get();
         BeanUtils.copyProperties(reviewDto, reviewModel);
+        reviewModel.setContent(reviewDto.getReviewText());  // Map reviewText to content
         return ResponseEntity.status(HttpStatus.OK).body(reviewRepository.save(reviewModel));
     }
 

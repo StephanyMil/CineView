@@ -7,6 +7,9 @@ import java.util.UUID;
 public class ReviewDto {
 
     @NotBlank
+    private String title;
+
+    @NotBlank
     private String reviewText;
 
     @NotNull
@@ -16,6 +19,14 @@ public class ReviewDto {
     private UUID movieId;
 
     // Getters e setters
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
     public String getReviewText() {
         return reviewText;
