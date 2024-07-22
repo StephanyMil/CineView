@@ -2,7 +2,7 @@ package cs2024.inf.CineView.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.UUID;  // Adicionando a importação necessária
+import java.util.UUID;
 
 @Entity
 @Table(name = "reviews")
@@ -11,7 +11,7 @@ public class ReviewModel {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    private UUID idFilme;  // Adicionando o campo idFilme
+    private UUID idFilme;
     private String usuario;
     private LocalDate dataAssistido;
     private int nota;

@@ -15,60 +15,54 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/reviews")
+@RequestMapping("/api")
 public class ReviewController {
 
     @Autowired
     ReviewRepository reviewRepository;
 
-    @PostMapping
-    public ResponseEntity<ReviewModel> saveReview(@RequestBody @Valid ReviewDto reviewDto) {
+    @PostMapping("/{id_filme}/reviews")
+    public ResponseEntity<ReviewModel> saveReview(@PathVariable(value = "id_filme") UUID idFilme, @RequestBody @Valid ReviewDto reviewDto) {
         var reviewModel = new ReviewModel();
         BeanUtils.copyProperties(reviewDto, reviewModel);
+        reviewModel.setIdFilme(idFilme);
         return ResponseEntity.status(HttpStatus.CREATED).body(reviewRepository.save(reviewModel));
     }
 
-    @GetMapping
-    public ResponseEntity<List<ReviewModel>> getAllReviews() {
-        return ResponseEntity.status(HttpStatus.OK).body(reviewRepository.findAll());
+    @GetMapping("/{id_filme}/reviews")
+    public ResponseEntity<List<ReviewModel>> getAllReviewsByFilm(@PathVariable(value = "id_filme") UUID idFilme) {
+        return ResponseEntity.status(HttpStatus.OK).body(reviewRepository.findByIdFilme(idFilme));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> getReviewById(@PathVariable(value = "id") UUID id) {
-        Optional<ReviewModel> reviewFound = reviewRepository.findById(id);
-        if (reviewFound.isEmpty()) {
+    @GetMapping("/{id_filme}/reviews/{id_review}")
+    public ResponseEntity<Object> getReviewById(@PathVariable(value = "id_filme") UUID idFilme, @PathVariable(value = "id_review") UUID idReview) {
+        Optional<ReviewModel> reviewFound = reviewRepository.findById(idReview);
+        if (reviewFound.isEmpty() || !reviewFound.get().getIdFilme().equals(idFilme)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review doesn't exist");
         }
         return ResponseEntity.status(HttpStatus.OK).body(reviewFound.get());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Object> updateReview(@PathVariable(value = "id") UUID id, @RequestBody @Valid ReviewDto reviewDto) {
-        Optional<ReviewModel> reviewFound = reviewRepository.findById(id);
-        if (reviewFound.isEmpty()) {
+    @PutMapping("/{id_filme}/reviews/{id_review}")
+    public ResponseEntity<Object> updateReview(@PathVariable(value = "id_filme") UUID idFilme, @PathVariable(value = "id_review") UUID idReview, @RequestBody @Valid ReviewDto reviewDto) {
+        Optional<ReviewModel> reviewFound = reviewRepository.findById(idReview);
+        if (reviewFound.isEmpty() || !reviewFound.get().getIdFilme().equals(idFilme)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review doesn't exist");
         }
         var reviewModel = reviewFound.get();
         BeanUtils.copyProperties(reviewDto, reviewModel);
+        reviewModel.setId(idReview);
+        reviewModel.setIdFilme(idFilme);
         return ResponseEntity.status(HttpStatus.OK).body(reviewRepository.save(reviewModel));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteReview(@PathVariable(value = "id") UUID id) {
-        Optional<ReviewModel> reviewFound = reviewRepository.findById(id);
-        if (reviewFound.isEmpty()) {
+    @DeleteMapping("/{id_filme}/reviews/{id_review}")
+    public ResponseEntity<Object> deleteReview(@PathVariable(value = "id_filme") UUID idFilme, @PathVariable(value = "id_review") UUID idReview) {
+        Optional<ReviewModel> reviewFound = reviewRepository.findById(idReview);
+        if (reviewFound.isEmpty() || !reviewFound.get().getIdFilme().equals(idFilme)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review doesn't exist");
         }
         reviewRepository.delete(reviewFound.get());
         return ResponseEntity.status(HttpStatus.OK).body("Review was deleted successfully");
-    }
-
-    @GetMapping("/api/{id_filme}/reviews")
-    public ResponseEntity<Object> getReviewsByIdFilme(@PathVariable(value = "id_filme") UUID idFilme) {
-        List<ReviewModel> reviews = reviewRepository.findByIdFilme(idFilme);
-        if (reviews.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No reviews found for this movie");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(reviews);
     }
 }

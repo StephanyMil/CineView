@@ -3,12 +3,12 @@ package cs2024.inf.CineView.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.UUID;  // Adicionando a importação necessária
+import java.util.UUID;
 
 public class ReviewDto {
 
     @NotNull
-    private UUID idFilme;  // Adicionando o campo idFilme
+    private UUID idFilme;
     @NotBlank
     private String usuario;
     @NotNull
