@@ -1,8 +1,7 @@
 package cs2024.inf.CineView.controllers;
 
-import cs2024.inf.CineView.models.Genre;
+import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.repository.GenreRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +19,12 @@ public class GenreController {
     @Autowired
     GenreRepository genreRepository;
 
-    @PostConstruct
-    public void init() {
-        if (genreRepository.count() == 0) {
-
-        }
-    }
+//    @PostConstruct
+//    public void init() {
+//        if (genreRepository.count() == 0) {
+//
+//        }
+//    }
 
 //    private List<Genre> readGenresCVS() {
 //        List<Genre> genres = new ArrayList<>();
@@ -33,13 +32,13 @@ public class GenreController {
 //    }
 
     @GetMapping
-    public ResponseEntity<List<Genre>> getAllGenres() {
+    public ResponseEntity<List<GenreModel>> getAllGenres() {
         return ResponseEntity.status(HttpStatus.OK).body(genreRepository.findAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getGenreById(@PathVariable(value = "id") int id) {
-        Optional<Genre> genre = genreRepository.findById(id);
+        Optional<GenreModel> genre = genreRepository.findById(id);
 
         return genre.<ResponseEntity<Object>>map(value -> ResponseEntity.status(HttpStatus.OK).body(value)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("This genre doesn't exist in our database"));
     }
