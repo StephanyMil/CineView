@@ -10,7 +10,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
-public class TmdbResponse {
+public class TmdbResponseMovie {
 
     @JsonProperty("results")
     private List<TmdbMovie> results;

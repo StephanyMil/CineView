@@ -1,10 +1,12 @@
-package cs2024.inf.CineView.services.tmdbService;
+package cs2024.inf.CineView.services.tmdbService.genre;
 
 import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.repository.GenreRepository;
 import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,9 +18,16 @@ public class TmdbServiceGenre {
     @Autowired
     private GenreRepository genreRepository;
 
+    @Value("${tmdb.api.key}")
+    private String apiKey;
+    @Value("${tmdb.api.url.genre}")
+    private String apiUrl;
+
+    @Transactional
     public void insertMovieGenres() {
-        String url = "https://api.themoviedb.org/3/genre/movie/list?api_key=d13942dd547cde524c1167f5f07b2890";
+        String url = apiUrl + "?api_key=" + apiKey;
         TmdbResponseGenre response = restTemplate.getForObject(url, TmdbResponseGenre.class);
+
         if (response != null && response.getResults() != null) {
             for (TmdbGenre tmdbGenre : response.getResults()) {
                 GenreModel genreModel = new GenreModel();
