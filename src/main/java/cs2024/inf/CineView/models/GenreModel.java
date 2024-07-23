@@ -3,11 +3,14 @@ package cs2024.inf.CineView.models;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "GENRE-DB")
-public class Genre {
-
+@Getter
+@Setter
+public class GenreModel {
     @Id
     private Long id;
     private String name;
@@ -27,4 +30,6 @@ public class Genre {
     public void setName(String name) {
         this.name = name;
     }
+
+
 }
