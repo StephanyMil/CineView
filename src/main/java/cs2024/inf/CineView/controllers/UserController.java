@@ -112,8 +112,16 @@ public class UserController {
         if (userOptional.isPresent() && followOptional.isPresent()) {
             UserModel user = userOptional.get();
             UserModel follow = followOptional.get();
+
+            // Adiciona o usuário seguido à lista de seguidos do usuário atual
             user.getFollowing().add(follow);
+            // Adiciona o usuário atual à lista de seguidores do usuário seguido
+            follow.getFollowers().add(user);
+
+            // Salva ambas as entidades
             userRepository.save(user);
+            userRepository.save(follow);
+
             return ResponseEntity.ok("Followed successfully");
         }
 
