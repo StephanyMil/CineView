@@ -2,7 +2,7 @@ package cs2024.inf.CineView.services;
 
 import cs2024.inf.CineView.dto.ReviewDto;
 import cs2024.inf.CineView.models.ReviewModel;
-import cs2024.inf.CineView.repositories.ReviewRepository;
+import cs2024.inf.CineView.repository.ReviewRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
