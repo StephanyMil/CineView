@@ -34,11 +34,11 @@ public class TmdbMovie {
     @JsonProperty("tagline")
     private String tagline;
 
-    @JsonProperty("genres_ids")
-    private List<Integer> genres_ids;
+    @JsonProperty("genre_ids")
+    private List<Integer> genre_ids;
 
-    public List<Integer> getGenres_ids() {
-        return genres_ids;
+    public List<Integer> getGenre_ids() {
+        return genre_ids;
     }
 }
 

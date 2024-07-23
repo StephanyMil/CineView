@@ -1,4 +1,4 @@
-package cs2024.inf.CineView.services.tmdbService;
+package cs2024.inf.CineView.services.tmdbService.genre;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

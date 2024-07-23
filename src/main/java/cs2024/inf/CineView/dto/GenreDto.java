@@ -1,6 +1,11 @@
 package cs2024.inf.CineView.dto;
 
-import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
-public record GenreDto(@NotNull Long id, @NotNull String name) {
+@Getter
+@Setter
+public class GenreDto {
+    private String name;
+    private long id;
 }

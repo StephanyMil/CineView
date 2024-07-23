@@ -25,5 +25,5 @@ outros usuários. Os usuários poderão, também, seguir outras pessoas e acumul
 
 #### Nossa base de dados de filmes será rotineiramente atualizada através da API do TMDB: https://api.themoviedb.org/3/movie/now_playing
 
-#### Base para pegarmos os gêneros de filmes://api.themoviedb.org/3/genre/movie/list?language=en'
+#### Base para pegarmos os gêneros de filmes: https://api.themoviedb.org/3/genre/movie/list?language=en'
 
