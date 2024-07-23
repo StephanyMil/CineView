@@ -30,6 +30,7 @@ public class MovieModel {
     private String tagline;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(name = "movie-genres")
     private List<GenreModel> genreModels = new ArrayList<>();
 
 }
