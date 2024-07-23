@@ -1,68 +1,52 @@
 package cs2024.inf.CineView.controllers;
 
 import cs2024.inf.CineView.dto.ReviewDto;
-import cs2024.inf.CineView.models.ReviewModel;
-import cs2024.inf.CineView.repository.ReviewRepository;
-import jakarta.validation.Valid;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import cs2024.inf.CineView.services.ReviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/{id_filme}/reviews")
 public class ReviewController {
 
-    @Autowired
-    ReviewRepository reviewRepository;
+    private final ReviewService reviewService;
 
-    @PostMapping("/{id_filme}/reviews")
-    public ResponseEntity<ReviewModel> saveReview(@PathVariable(value = "id_filme") UUID idFilme, @RequestBody @Valid ReviewDto reviewDto) {
-        var reviewModel = new ReviewModel();
-        BeanUtils.copyProperties(reviewDto, reviewModel);
-        reviewModel.setIdFilme(idFilme);
-        return ResponseEntity.status(HttpStatus.CREATED).body(reviewRepository.save(reviewModel));
+    public ReviewController(ReviewService reviewService) {
+        this.reviewService = reviewService;
     }
 
-    @GetMapping("/{id_filme}/reviews")
-    public ResponseEntity<List<ReviewModel>> getAllReviewsByFilm(@PathVariable(value = "id_filme") UUID idFilme) {
-        return ResponseEntity.status(HttpStatus.OK).body(reviewRepository.findByIdFilme(idFilme));
+    // HU 11: Cadastrar review
+    @PostMapping
+    public ResponseEntity<Void> createReview(@PathVariable Long id_filme,
+                                             @RequestBody @Valid ReviewDto reviewDto) {
+        reviewService.saveReview(id_filme, reviewDto);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id_filme}/reviews/{id_review}")
-    public ResponseEntity<Object> getReviewById(@PathVariable(value = "id_filme") UUID idFilme, @PathVariable(value = "id_review") UUID idReview) {
-        Optional<ReviewModel> reviewFound = reviewRepository.findById(idReview);
-        if (reviewFound.isEmpty() || !reviewFound.get().getIdFilme().equals(idFilme)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review doesn't exist");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(reviewFound.get());
+    // HU 12: Visualizar reviews de outros usuários
+    @GetMapping
+    public ResponseEntity<List<ReviewDto>> getReviewsByMovieId(@PathVariable Long id_filme) {
+        List<ReviewDto> reviews = reviewService.getReviewsByMovieId(id_filme);
+        return ResponseEntity.ok(reviews);
     }
 
-    @PutMapping("/{id_filme}/reviews/{id_review}")
-    public ResponseEntity<Object> updateReview(@PathVariable(value = "id_filme") UUID idFilme, @PathVariable(value = "id_review") UUID idReview, @RequestBody @Valid ReviewDto reviewDto) {
-        Optional<ReviewModel> reviewFound = reviewRepository.findById(idReview);
-        if (reviewFound.isEmpty() || !reviewFound.get().getIdFilme().equals(idFilme)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review doesn't exist");
-        }
-        var reviewModel = reviewFound.get();
-        BeanUtils.copyProperties(reviewDto, reviewModel);
-        reviewModel.setId(idReview);
-        reviewModel.setIdFilme(idFilme);
-        return ResponseEntity.status(HttpStatus.OK).body(reviewRepository.save(reviewModel));
+    // HU 14: Editar review
+    @PutMapping("/{id_review}")
+    public ResponseEntity<Void> updateReview(@PathVariable Long id_filme,
+                                             @PathVariable Long id_review,
+                                             @RequestBody @Valid ReviewDto reviewDto) {
+        reviewService.updateReview(id_filme, id_review, reviewDto);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{id_filme}/reviews/{id_review}")
-    public ResponseEntity<Object> deleteReview(@PathVariable(value = "id_filme") UUID idFilme, @PathVariable(value = "id_review") UUID idReview) {
-        Optional<ReviewModel> reviewFound = reviewRepository.findById(idReview);
-        if (reviewFound.isEmpty() || !reviewFound.get().getIdFilme().equals(idFilme)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review doesn't exist");
-        }
-        reviewRepository.delete(reviewFound.get());
-        return ResponseEntity.status(HttpStatus.OK).body("Review was deleted successfully");
+    // HU 15: Excluir review
+    @DeleteMapping("/{id_review}")
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id_filme,
+                                             @PathVariable Long id_review) {
+        reviewService.deleteReview(id_filme, id_review);
+        return ResponseEntity.noContent().build();
     }
 }

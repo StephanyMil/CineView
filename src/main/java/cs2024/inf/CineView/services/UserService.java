@@ -6,6 +6,7 @@ import cs2024.inf.CineView.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import cs2024.inf.CineView.models.ReviewModel;
 
 @Service
 public class UserService {
