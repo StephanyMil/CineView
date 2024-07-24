@@ -33,12 +33,26 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Transactional
     @PostMapping
-    public ResponseEntity<UserModel> saveUser(@RequestBody @Valid UserDto userDto) {
-        var userModel = new UserModel();
-        BeanUtils.copyProperties(userDto, userModel);
-        userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(userRepository.save(userModel));
+    public ResponseEntity<?> saveUser(@RequestBody @Valid UserDto userDto) {
+        try {
+            // Verifica se o e-mail já está em uso
+            Optional<UserModel> existingUser = userRepository.findByEmail(userDto.getEmail());
+            if (existingUser.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Email já está em uso.");
+            }
+
+            var userModel = new UserModel();
+            BeanUtils.copyProperties(userDto, userModel);
+            userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            userRepository.save(userModel);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(userModel);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar a solicitação.");
+        }
     }
 
     @Transactional
@@ -81,17 +95,56 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 
+    @Transactional
     @PutMapping("/{id}")
-    public ResponseEntity<Object> putUser(@PathVariable(value = "id") UUID id, @RequestBody @Valid UserDto userDto) {
-        Optional<UserModel> userFound = userRepository.findById(id);
-        if (userFound.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This user doesn't exist");
+    public ResponseEntity<?> putUser(@PathVariable(value = "id") UUID id, @RequestBody @Valid UserDto userDto) {
+        try {
+            Optional<UserModel> userFound = userRepository.findById(id);
+            if (userFound.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This user doesn't exist");
+            }
+
+            UserModel userModel = userFound.get();
+
+            // Verifica se o e-mail está sendo alterado e se já está em uso por outro usuário
+            if (!userModel.getEmail().equals(userDto.getEmail())) {
+                Optional<UserModel> existingUserWithEmail = userRepository.findByEmail(userDto.getEmail());
+                if (existingUserWithEmail.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("Email já está em uso.");
+                }
+            }
+
+            // Copia as propriedades do DTO para o modelo, exceto o ID e a senha se não forem fornecidos
+            userModel.setName(userDto.getName());
+            userModel.setEmail(userDto.getEmail());
+            userModel.setBirthDate(userDto.getBirthDate());
+            if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
+                userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            }
+
+            userRepository.save(userModel);
+
+            // Popula o DTO para resposta
+            UserDetailsDto userDetailsDto = new UserDetailsDto();
+            userDetailsDto.setId(userModel.getId());
+            userDetailsDto.setName(userModel.getName());
+            userDetailsDto.setEmail(userModel.getEmail());
+            userDetailsDto.setBirthDate(userModel.getBirthDate());
+            userDetailsDto.setFollowers(userModel.getFollowers().stream().map(UserModel::getId).collect(Collectors.toSet()));
+            userDetailsDto.setFollowing(userModel.getFollowing().stream().map(UserModel::getId).collect(Collectors.toSet()));
+
+            // Verifica se deve incluir a senha na resposta (por razões de segurança, geralmente não se faz isso)
+            if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
+                userDetailsDto.setPassword(userModel.getPassword()); // opcional, dependendo das políticas de segurança
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(userDetailsDto);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar a solicitação.");
         }
-        var userModel = userFound.get();
-        BeanUtils.copyProperties(userDto, userModel);
-        userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));  // Ensure password is updated securely
-        return ResponseEntity.status(HttpStatus.OK).body(userRepository.save(userModel));
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable(value = "id") UUID id) {
