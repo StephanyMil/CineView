@@ -12,11 +12,11 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name = "GENRE-DB")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "GENRE-DB")
 public class GenreModel {
     @Id
     private Long id;
