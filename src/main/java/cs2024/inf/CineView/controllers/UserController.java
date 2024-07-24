@@ -129,27 +129,25 @@ public class UserController {
     }
 
     @Transactional
-    @GetMapping("/{userId}/followers")
-    public ResponseEntity<?> getFollowers(@PathVariable UUID userId) {
+    @PostMapping("/{userId}/unfollow/{followId}")
+    public ResponseEntity<?> unfollowUser(@PathVariable UUID userId, @PathVariable UUID followId) {
         Optional<UserModel> userOptional = userRepository.findById(userId);
+        Optional<UserModel> followOptional = userRepository.findById(followId);
 
-        if (userOptional.isPresent()) {
+        if (userOptional.isPresent() && followOptional.isPresent()) {
             UserModel user = userOptional.get();
-            Set<UserModel> followers = user.getFollowers();
-            return ResponseEntity.ok(followers);
-        }
+            UserModel follow = followOptional.get();
 
-        return ResponseEntity.status(404).body("User not found");
-    }
+            // Remove o usuário seguido da lista de seguidos do usuário atual
+            user.getFollowing().remove(follow);
+            // Remove o usuário atual da lista de seguidores do usuário seguido
+            follow.getFollowers().remove(user);
 
-    @GetMapping("/{userId}/following")
-    public ResponseEntity<?> getFollowing(@PathVariable UUID userId) {
-        Optional<UserModel> userOptional = userRepository.findById(userId);
+            // Salva ambas as entidades
+            userRepository.save(user);
+            userRepository.save(follow);
 
-        if (userOptional.isPresent()) {
-            UserModel user = userOptional.get();
-            Set<UserModel> following = user.getFollowing();
-            return ResponseEntity.ok(following);
+            return ResponseEntity.ok("Unfollowed successfully");
         }
 
         return ResponseEntity.status(404).body("User not found");
