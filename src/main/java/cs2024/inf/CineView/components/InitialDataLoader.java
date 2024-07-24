@@ -2,8 +2,8 @@ package cs2024.inf.CineView.components;
 
 import cs2024.inf.CineView.repository.GenreRepository;
 import cs2024.inf.CineView.repository.MovieRepository;
-import cs2024.inf.CineView.services.tmdbService.TmdbService;
-import cs2024.inf.CineView.services.tmdbService.TmdbServiceGenre;
+import cs2024.inf.CineView.services.tmdbService.genre.TmdbServiceGenre;
+import cs2024.inf.CineView.services.tmdbService.movie.TmdbServiceMovie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ public class InitialDataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        TmdbService tmdbService = new TmdbService();
+        TmdbServiceMovie tmdbServiceMovie = new TmdbServiceMovie();
         if (genreRepository.count() == 0) {
             tmdbServiceGenre.insertMovieGenres();
         }

@@ -1,4 +1,4 @@
-package cs2024.inf.CineView.services.tmdbService;
+package cs2024.inf.CineView.services.tmdbService.movie;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,7 +10,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
-public class TmdbResponse {
+public class TmdbResponseMovie {
 
     @JsonProperty("results")
     private List<TmdbMovie> results;

@@ -1,5 +1,6 @@
-package cs2024.inf.CineView.services.tmdbService;
+package cs2024.inf.CineView.services.tmdbService.movie;
 
+import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.models.MovieModel;
 import cs2024.inf.CineView.repository.GenreRepository;
 import cs2024.inf.CineView.repository.MovieRepository;
@@ -12,15 +13,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @Service
 @EnableScheduling
-public class TmdbService {
+public class TmdbServiceMovie {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${tmdb.api.key}")
     private String apiKey;
-    @Value("${tmdb.api.url}")
+    @Value("${tmdb.api.url.movie}")
     private String apiUrl;
     @Autowired
     private MovieRepository movieRepository;
@@ -29,15 +32,14 @@ public class TmdbService {
 
 
     public void updateNowPlayingMovies() {
-//        String url = apiUrl + "?api_key=" + apiKey;
-        String url = "https://api.themoviedb.org/3/movie/now_playing?api_key=d13942dd547cde524c1167f5f07b2890";
-        TmdbResponse response = restTemplate.getForObject(url, TmdbResponse.class);
+        String url = apiUrl + "?api_key=" + apiKey;
+        TmdbResponseMovie response = restTemplate.getForObject(url, TmdbResponseMovie.class);
         if (response != null && response.getResults() != null) {
             for (TmdbMovie tmdbMovie : response.getResults()) {
                 MovieModel movieModel = new MovieModel();
 
-////                List<GenreModel> genres = genreRepository.findAllByd(tmdbMovie.getGenres_ids());
-//                movieModel.setGenreModels(genres);
+                List<GenreModel> genres = genreRepository.findAllById(tmdbMovie.getGenre_ids());
+                movieModel.setGenreModels(genres);
 
                 BeanUtils.copyProperties(tmdbMovie, movieModel);
 
@@ -51,20 +53,6 @@ public class TmdbService {
         updateNowPlayingMovies();
     }
 
-
-//    public void insertMovieGenres() {
-//        String url = "https://api.themoviedb.org/3/genre/movie/list?api_key=d13942dd547cde524c1167f5f07b2890";
-//        TmdbResponseGenre response = restTemplate.getForObject(url, TmdbResponseGenre.class);
-//        if (response != null && response.getResults() != null) {
-//            for (TmdbGenre tmdbGenre : response.getResults()) {
-//                GenreModel genreModel = new GenreModel();
-//
-//                BeanUtils.copyProperties(tmdbGenre, genreModel);
-//
-//                genreRepository.save(genreModel);
-//            }
-//        }
-//    }
 
     @Scheduled(cron = "0 0 0 * * SUN") // A cada domingo à meia-noite
     public void scheduleWeeklyUpdate() {
