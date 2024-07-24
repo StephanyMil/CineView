@@ -5,8 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "MOVIE-DB")
@@ -22,15 +23,19 @@ public class MovieModel {
     @Column(length = 2000)
     private String overview;
 
-    private Date releaseDate;
+    private String releaseDate;
     private float voteAverage;
-    private int runtime;
 
-    @Column(length = 2000)
-    private String tagline;
+    private Double popularity;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(name = "movie-genres")
+    @JoinTable(name = "movie-genres", joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private List<GenreModel> genreModels = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(name = "movie-keywords", joinColumns = @JoinColumn(name = "movie_id"),
+            inverseJoinColumns = @JoinColumn(name = "keyword_id"))
+    private Set<KeywordModel> keywords = new HashSet<>();
 
 }

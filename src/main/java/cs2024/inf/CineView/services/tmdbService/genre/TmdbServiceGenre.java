@@ -3,6 +3,7 @@ package cs2024.inf.CineView.services.tmdbService.genre;
 import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.repository.GenreRepository;
 import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ public class TmdbServiceGenre {
     @Autowired
     private GenreRepository genreRepository;
 
+    @Transactional
     public void insertMovieGenres() {
         String url = apiUrl + "?api_key=" + apiKey;
         TmdbResponseGenre response = restTemplate.getForObject(url, TmdbResponseGenre.class);

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -23,22 +22,16 @@ public class TmdbMovie {
     private String overview;
 
     @JsonProperty("release_date")
-    private Date releaseDate;
+    private String releaseDate;
 
-    @JsonProperty("vote_average")
-    private float voteAverage;
+//    @JsonProperty("vote_average")
+//    private float voteAverage;
 
-    @JsonProperty("runtime")
-    private int runtime;
-
-    @JsonProperty("tagline")
-    private String tagline;
+//    @JsonProperty("popularity")
+//    private Double popularity;
 
     @JsonProperty("genre_ids")
     private List<Integer> genre_ids;
 
-    public List<Integer> getGenres_ids() {
-        return genre_ids;
-    }
 }
 
