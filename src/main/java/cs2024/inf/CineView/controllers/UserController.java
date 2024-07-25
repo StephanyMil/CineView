@@ -11,12 +11,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,6 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody @Valid UserDto userDto) {
         try {
-            // Verifica se o e-mail já está em uso
             Optional<UserModel> existingUser = userRepository.findByEmail(userDto.getEmail());
             if (existingUser.isPresent()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Email já está em uso.");
@@ -106,7 +106,6 @@ public class UserController {
 
             UserModel userModel = userFound.get();
 
-            // Verifica se o e-mail está sendo alterado e se já está em uso por outro usuário
             if (!userModel.getEmail().equals(userDto.getEmail())) {
                 Optional<UserModel> existingUserWithEmail = userRepository.findByEmail(userDto.getEmail());
                 if (existingUserWithEmail.isPresent()) {
@@ -114,7 +113,6 @@ public class UserController {
                 }
             }
 
-            // Copia as propriedades do DTO para o modelo, exceto o ID e a senha se não forem fornecidos
             userModel.setName(userDto.getName());
             userModel.setEmail(userDto.getEmail());
             userModel.setBirthDate(userDto.getBirthDate());
@@ -124,7 +122,6 @@ public class UserController {
 
             userRepository.save(userModel);
 
-            // Popula o DTO para resposta
             UserDetailsDto userDetailsDto = new UserDetailsDto();
             userDetailsDto.setId(userModel.getId());
             userDetailsDto.setName(userModel.getName());
@@ -133,9 +130,8 @@ public class UserController {
             userDetailsDto.setFollowers(userModel.getFollowers().stream().map(UserModel::getId).collect(Collectors.toSet()));
             userDetailsDto.setFollowing(userModel.getFollowing().stream().map(UserModel::getId).collect(Collectors.toSet()));
 
-            // Verifica se deve incluir a senha na resposta (por razões de segurança, geralmente não se faz isso)
             if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
-                userDetailsDto.setPassword(userModel.getPassword()); // opcional, dependendo das políticas de segurança
+                userDetailsDto.setPassword(userModel.getPassword());
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(userDetailsDto);
@@ -144,7 +140,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar a solicitação.");
         }
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable(value = "id") UUID id) {
@@ -166,12 +161,9 @@ public class UserController {
             UserModel user = userOptional.get();
             UserModel follow = followOptional.get();
 
-            // Adiciona o usuário seguido à lista de seguidos do usuário atual
             user.getFollowing().add(follow);
-            // Adiciona o usuário atual à lista de seguidores do usuário seguido
             follow.getFollowers().add(user);
 
-            // Salva ambas as entidades
             userRepository.save(user);
             userRepository.save(follow);
 
@@ -191,12 +183,9 @@ public class UserController {
             UserModel user = userOptional.get();
             UserModel follow = followOptional.get();
 
-            // Remove o usuário seguido da lista de seguidos do usuário atual
             user.getFollowing().remove(follow);
-            // Remove o usuário atual da lista de seguidores do usuário seguido
             follow.getFollowers().remove(user);
 
-            // Salva ambas as entidades
             userRepository.save(user);
             userRepository.save(follow);
 
@@ -204,5 +193,91 @@ public class UserController {
         }
 
         return ResponseEntity.status(404).body("User not found");
+    }
+
+    @Transactional
+    @GetMapping("/profile")
+    public ResponseEntity<Object> getUserProfile() {
+        String userEmail = getAuthenticatedUserEmail();
+        Optional<UserModel> userFound = userRepository.findByEmail(userEmail);
+        if (userFound.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This user doesn't exist");
+        }
+
+        UserModel user = userFound.get();
+        UserDetailsDto userDto = new UserDetailsDto();
+        userDto.setId(user.getId());
+        userDto.setName(user.getName());
+        userDto.setEmail(user.getEmail());
+        userDto.setPassword(user.getPassword());
+        userDto.setBirthDate(user.getBirthDate());
+        userDto.setFollowers(user.getFollowers().stream().map(UserModel::getId).collect(Collectors.toSet()));
+        userDto.setFollowing(user.getFollowing().stream().map(UserModel::getId).collect(Collectors.toSet()));
+
+        return ResponseEntity.status(HttpStatus.OK).body(userDto);
+    }
+
+    @Transactional
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(@RequestBody @Valid UserDto userDto) {
+        try {
+            String userEmail = getAuthenticatedUserEmail();
+            Optional<UserModel> userFound = userRepository.findByEmail(userEmail);
+            if (userFound.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This user doesn't exist");
+            }
+
+            UserModel userModel = userFound.get();
+
+            if (!userModel.getEmail().equals(userDto.getEmail())) {
+                Optional<UserModel> existingUserWithEmail = userRepository.findByEmail(userDto.getEmail());
+                if (existingUserWithEmail.isPresent()) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body("Email já está em uso.");
+                }
+            }
+
+            userModel.setName(userDto.getName());
+            userModel.setEmail(userDto.getEmail());
+            userModel.setBirthDate(userDto.getBirthDate());
+            if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
+                userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            }
+
+            userRepository.save(userModel);
+
+            UserDetailsDto userDetailsDto = new UserDetailsDto();
+            userDetailsDto.setId(userModel.getId());
+            userDetailsDto.setName(userModel.getName());
+            userDetailsDto.setEmail(userModel.getEmail());
+            userDetailsDto.setBirthDate(userModel.getBirthDate());
+            userDetailsDto.setFollowers(userModel.getFollowers().stream().map(UserModel::getId).collect(Collectors.toSet()));
+            userDetailsDto.setFollowing(userModel.getFollowing().stream().map(UserModel::getId).collect(Collectors.toSet()));
+
+            if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
+                userDetailsDto.setPassword(userModel.getPassword());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(userDetailsDto);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar a solicitação.");
+        }
+    }
+
+    @Transactional
+    @DeleteMapping("/profile")
+    public ResponseEntity<Object> deleteUserProfile() {
+        String userEmail = getAuthenticatedUserEmail();
+        Optional<UserModel> userFound = userRepository.findByEmail(userEmail);
+        if (userFound.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This user doesn't exist");
+        }
+        userRepository.delete(userFound.get());
+        return ResponseEntity.status(HttpStatus.OK).body("User was deleted successfully");
+    }
+
+    private String getAuthenticatedUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
     }
 }

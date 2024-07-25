@@ -1,11 +1,12 @@
 package cs2024.inf.CineView.services;
 
-import java.util.UUID;
 import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class UserService {
