@@ -53,16 +53,20 @@ public class TmdbServiceMovie {
         TmdbResponseMovie response = restTemplate.getForObject(url, TmdbResponseMovie.class);
         if (response != null && response.getResults() != null) {
             for (TmdbMovie tmdbMovie : response.getResults()) {
-                MovieModel movieModel = new MovieModel();
+                if (!movieRepository.existsById(tmdbMovie.getId())) {
 
-                List<GenreModel> genres = genreRepository.findAllById(tmdbMovie.getGenre_ids());
-                movieModel.setGenreModels(genres);
 
-                BeanUtils.copyProperties(tmdbMovie, movieModel);
-                Set<KeywordModel> keys = getMovieKeyword(tmdbMovie.getId());
-                movieModel.setKeywords(keys);
+                    MovieModel movieModel = new MovieModel();
 
-                movieRepository.save(movieModel);
+                    List<GenreModel> genres = genreRepository.findAllById(tmdbMovie.getGenre_ids());
+                    movieModel.setGenreModels(genres);
+
+                    BeanUtils.copyProperties(tmdbMovie, movieModel);
+                    Set<KeywordModel> keys = getMovieKeyword(tmdbMovie.getId());
+                    movieModel.setKeywords(keys);
+
+                    movieRepository.save(movieModel);
+                }
             }
         }
     }
@@ -76,18 +80,22 @@ public class TmdbServiceMovie {
 
             for (TmdbKeyword tmdbKeyword : response.getKeywords()) {
 
-                KeywordModel keyword = new KeywordModel();
-                BeanUtils.copyProperties(tmdbKeyword, keyword);
+                KeywordModel keywordExistent = keywordRepository.existsByName(tmdbKeyword.getName());
+                if (keywordExistent == null) {
+                    KeywordModel keyword = new KeywordModel();
+                    BeanUtils.copyProperties(tmdbKeyword, keyword);
 
-                keywordRepository.save(keyword);
 
-                keywordsModel.add(keyword);
+                    keywordRepository.save(keyword);
+
+                    keywordsModel.add(keyword);
+
+                } else keywordsModel.add(keywordExistent);
+
 
             }
-
             return keywordsModel;
         }
-
         return null;
     }
 

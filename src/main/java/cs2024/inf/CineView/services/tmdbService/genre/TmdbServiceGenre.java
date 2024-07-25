@@ -2,7 +2,6 @@ package cs2024.inf.CineView.services.tmdbService.genre;
 
 import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.repository.GenreRepository;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +37,9 @@ public class TmdbServiceGenre {
             }
         }
     }
-
-    @PostConstruct
-    public void init() {
-        insertMovieGenres();
-    }
+//
+//    @PostConstruct
+//    public void init() {
+//        insertMovieGenres();
+//    }
 }

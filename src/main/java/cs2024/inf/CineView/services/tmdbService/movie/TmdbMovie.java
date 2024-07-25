@@ -24,12 +24,6 @@ public class TmdbMovie {
     @JsonProperty("release_date")
     private String releaseDate;
 
-//    @JsonProperty("vote_average")
-//    private float voteAverage;
-
-//    @JsonProperty("popularity")
-//    private Double popularity;
-
     @JsonProperty("genre_ids")
     private List<Integer> genre_ids;
 

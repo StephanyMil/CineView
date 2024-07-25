@@ -20,7 +20,7 @@ public class MovieDto {
     private String tagline;
     private Double popularity;
     private Double vote_average;
-    private Double vote_count;
+    private Long vote_count;
     private List<GenreDto> genreModels;
 
 }
