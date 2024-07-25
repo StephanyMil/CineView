@@ -1,10 +1,13 @@
 package cs2024.inf.CineView.controllers;
 
-import cs2024.inf.CineView.dto.LoginDto;
+import cs2024.inf.CineView.dto.AuthRequest;
+import cs2024.inf.CineView.dto.AuthResponse;
 import cs2024.inf.CineView.dto.UserDto;
 import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.UserRepository;
+import cs2024.inf.CineView.utils.JwtTokenUtil;
 import jakarta.validation.Valid;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,56 +28,47 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
-    public ResponseEntity<String> authenticateUser(@RequestBody @Valid LoginDto loginDto) {
-        Optional<UserModel> userOpt = userRepository.findByEmail(loginDto.getEmail());
-
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        }
-
+    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
-
+                    new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
+            );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.ok("User signed-in successfully!");
+            String jwt = jwtTokenUtil.generateToken(authentication);
+
+            return ResponseEntity.ok(new AuthResponse(jwt, "Login successful!"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok("Logout successful!");
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody @Valid UserDto userDto) {
-        // Check if the email already exists
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("Email is already taken!");
+    public ResponseEntity<?> register(@RequestBody @Valid UserDto userDto) {
+        Optional<UserModel> existingUser = userRepository.findByEmail(userDto.getEmail());
+        if (existingUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use.");
         }
 
-        UserModel user = new UserModel();
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setBirthDate(userDto.getBirthDate());
+        UserModel userModel = new UserModel();
+        BeanUtils.copyProperties(userDto, userModel);
+        userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        userRepository.save(userModel);
 
-        userRepository.save(user);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
-    }
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            SecurityContextHolder.getContext().setAuthentication(null);
-            return ResponseEntity.ok("User logged out successfully.");
-        }
-        return ResponseEntity.ok("User was not logged in.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(userModel);
     }
 }
