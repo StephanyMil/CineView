@@ -267,13 +267,18 @@ public class UserController {
     @Transactional
     @DeleteMapping("/profile")
     public ResponseEntity<Object> deleteUserProfile() {
-        String userEmail = getAuthenticatedUserEmail();
-        Optional<UserModel> userFound = userRepository.findByEmail(userEmail);
-        if (userFound.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This user doesn't exist");
+        try {
+            String userEmail = getAuthenticatedUserEmail();
+            Optional<UserModel> userFound = userRepository.findByEmail(userEmail);
+            if (userFound.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This user doesn't exist");
+            }
+            userRepository.delete(userFound.get());
+            return ResponseEntity.status(HttpStatus.OK).body("User was deleted successfully");
+        } catch (Exception e) {
+            e.printStackTrace(); // Adicionando logging da exceção
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the user profile");
         }
-        userRepository.delete(userFound.get());
-        return ResponseEntity.status(HttpStatus.OK).body("User was deleted successfully");
     }
 
     private String getAuthenticatedUserEmail() {

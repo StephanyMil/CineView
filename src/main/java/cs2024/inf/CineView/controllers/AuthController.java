@@ -6,7 +6,6 @@ import cs2024.inf.CineView.dto.UserDto;
 import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.UserRepository;
 import cs2024.inf.CineView.utils.JwtTokenUtil;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +38,17 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtTokenUtil.generateToken(authentication);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtTokenUtil.generateToken(authentication);
 
-        return ResponseEntity.ok(new AuthResponse(jwt, "Login successful!"));
+            return ResponseEntity.ok(new AuthResponse(jwt, "Login successful!"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
+        }
     }
 
     @PostMapping("/logout")
@@ -61,7 +64,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use.");
         }
 
-        var userModel = new UserModel();
+        UserModel userModel = new UserModel();
         BeanUtils.copyProperties(userDto, userModel);
         userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));
         userRepository.save(userModel);
