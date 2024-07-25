@@ -50,4 +50,6 @@ public class UserDto {
     public void setBirthDate(Date birthDate) {
         this.birthDate = birthDate;
     }
+
+
 }

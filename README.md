@@ -19,7 +19,11 @@ entre si, curtindo e respondendo comentários já existentes, ou comentando em r
 outros usuários. Os usuários poderão, também, seguir outras pessoas e acumular seguidores.
 
 ## Pré requistos para rodar projeto:
+
 - Java 22
 - PostgreSQL 15 e PgAdmin 4
 
 #### Nossa base de dados de filmes será rotineiramente atualizada através da API do TMDB: https://api.themoviedb.org/3/movie/now_playing
+
+#### Base para pegarmos os gêneros de filmes: https://api.themoviedb.org/3/genre/movie/list'
+
