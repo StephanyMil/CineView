@@ -19,18 +19,6 @@ public class GenreController {
     @Autowired
     GenreRepository genreRepository;
 
-//    @PostConstruct
-//    public void init() {
-//        if (genreRepository.count() == 0) {
-//
-//        }
-//    }
-
-//    private List<Genre> readGenresCVS() {
-//        List<Genre> genres = new ArrayList<>();
-//
-//    }
-
     @GetMapping
     public ResponseEntity<List<GenreModel>> getAllGenres() {
         return ResponseEntity.status(HttpStatus.OK).body(genreRepository.findAll());
