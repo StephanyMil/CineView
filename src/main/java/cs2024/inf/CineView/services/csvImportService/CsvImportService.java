@@ -1,4 +1,4 @@
-package cs2024.inf.CineView.services.CsvImportService;
+package cs2024.inf.CineView.services.csvImportService;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

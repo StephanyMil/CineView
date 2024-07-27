@@ -1,4 +1,4 @@
-package cs2024.inf.CineView.services.tmdbService.movie;
+package cs2024.inf.CineView.services.tmdbApiService.movie;
 
 import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.models.KeywordModel;
@@ -6,8 +6,8 @@ import cs2024.inf.CineView.models.MovieModel;
 import cs2024.inf.CineView.repository.GenreRepository;
 import cs2024.inf.CineView.repository.KeywordRepository;
 import cs2024.inf.CineView.repository.MovieRepository;
-import cs2024.inf.CineView.services.tmdbService.keyword.TmdbKeyword;
-import cs2024.inf.CineView.services.tmdbService.keyword.TmdbResponseKeyword;
+import cs2024.inf.CineView.services.tmdbApiService.keyword.TmdbKeyword;
+import cs2024.inf.CineView.services.tmdbApiService.keyword.TmdbResponseKeyword;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;

@@ -19,6 +19,7 @@ public class MovieController {
 
     @Autowired
     MovieRepository movieRepository;
+
     @Autowired
     private MovieService movieService;
 
