@@ -10,14 +10,19 @@ import java.util.UUID;
 @Setter
 public class CommentDto {
     private UUID id; // Id do comentário
-    private String text;
+    private String text; // Conteúdo do comentário
     private UUID userId; // Id do usuário que fez o comentário
-    private UUID reviewId; // Id da review a qual o comentário pertence
+    private Long reviewId; // Id da review a qual o comentário pertence
 
+    // Construtor padrão
+    public CommentDto() {
+    }
+
+    // Construtor para criar um CommentDto a partir de um CommentModel
     public CommentDto(CommentModel commentModel) {
         this.id = commentModel.getId();
         this.text = commentModel.getText();
         this.userId = commentModel.getUser().getId();
-        // this.reviewId = commentModel.getReview().getId();
+        this.reviewId = commentModel.getReview().getId();
     }
 }

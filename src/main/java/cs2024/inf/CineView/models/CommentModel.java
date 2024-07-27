@@ -1,8 +1,13 @@
 package cs2024.inf.CineView.models;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
+@Setter
+@Getter
 @Entity
 public class CommentModel {
     @Id
@@ -13,42 +18,11 @@ public class CommentModel {
     private String text;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users")
     private UserModel user;
 
     @ManyToOne
-    @JoinColumn(name = "review_id")
+    @JoinColumn(name = "review-db")
     private ReviewModel review;
 
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public UserModel getUser() {
-        return user;
-    }
-
-    public void setUser(UserModel user) {
-        this.user = user;
-    }
-
-    public ReviewModel getReview() {
-        return review;
-    }
-
-    public void setReview(ReviewModel review) {
-        this.review = review;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public UUID getId() {
-        return id;
-    }
 }

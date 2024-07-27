@@ -2,7 +2,12 @@ package cs2024.inf.CineView.services;
 
 import cs2024.inf.CineView.dto.CommentDto;
 import cs2024.inf.CineView.models.CommentModel;
+import cs2024.inf.CineView.models.ReviewModel;
+import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.CommentRepository;
+import cs2024.inf.CineView.repository.ReviewRepository;
+import cs2024.inf.CineView.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,17 +17,30 @@ import java.util.UUID;
 @Service
 public class CommentService {
 
-    private final CommentRepository commentRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
-    public CommentService(CommentRepository commentRepository) {
-        this.commentRepository = commentRepository;
-    }
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     public CommentModel createCommentary(CommentDto commentDto) {
         CommentModel commentModel = new CommentModel();
         commentModel.setText(commentDto.getText());
-        // Setar usuário e review
-        return commentRepository.save(commentModel);
+
+        // Buscar usuário e review a partir dos IDs
+        Optional<UserModel> user = userRepository.findById(commentDto.getUserId());
+        Optional<ReviewModel> review = reviewRepository.findById(commentDto.getReviewId());
+
+        if (user.isPresent() && review.isPresent()) {
+            commentModel.setUser(user.get());
+            commentModel.setReview(review.get());
+            return commentRepository.save(commentModel);
+        } else {
+            throw new RuntimeException("Usuário ou review não encontrados.");
+        }
     }
 
     public CommentModel getCommentaryById(UUID id) {
@@ -30,7 +48,7 @@ public class CommentService {
         return commentModel.orElse(null);
     }
 
-    public CommentModel editCommentary(UUID id, CommentDto commentDto) { // Use UUID aqui
+    public CommentModel editCommentary(UUID id, CommentDto commentDto) {
         Optional<CommentModel> commentModelOptional = commentRepository.findById(id);
         if (commentModelOptional.isPresent()) {
             CommentModel commentModel = commentModelOptional.get();
@@ -41,7 +59,7 @@ public class CommentService {
         return null;
     }
 
-    public void deleteCommentary(UUID id) { // Use UUID aqui
+    public void deleteCommentary(UUID id) {
         commentRepository.deleteById(id);
     }
 
