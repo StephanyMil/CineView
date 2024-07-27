@@ -18,6 +18,6 @@ public class CommentDto {
         this.id = commentModel.getId();
         this.text = commentModel.getText();
         this.userId = commentModel.getUser().getId();
-        this.reviewId = commentModel.getReview().getId();
+        // this.reviewId = commentModel.getReview().getId();
     }
 }
