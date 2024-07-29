@@ -2,8 +2,15 @@ package cs2024.inf.CineView.controllers;
 
 import cs2024.inf.CineView.dto.UserDto;
 import cs2024.inf.CineView.dto.UserDetailsDto;
+import cs2024.inf.CineView.dto.FilmListDto;
+import cs2024.inf.CineView.dto.movies.MovieDto;
+import cs2024.inf.CineView.models.FilmListModel;
+import cs2024.inf.CineView.models.MovieModel;
 import cs2024.inf.CineView.models.UserModel;
+import cs2024.inf.CineView.repository.FilmListRepository;
+import cs2024.inf.CineView.repository.MovieRepository;
 import cs2024.inf.CineView.repository.UserRepository;
+import cs2024.inf.CineView.services.FilmListService;
 import cs2024.inf.CineView.services.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -34,6 +41,15 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private FilmListRepository filmListRepository;
+
+    @Autowired
+    private FilmListService filmListService;
+
+    @Autowired
+    private MovieRepository movieRepository;
+
     @Transactional
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody @Valid UserDto userDto) {
@@ -43,7 +59,7 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Email já está em uso.");
             }
 
-            var userModel = new UserModel();
+            UserModel userModel = new UserModel();
             BeanUtils.copyProperties(userDto, userModel);
             userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));
             userRepository.save(userModel);
@@ -68,6 +84,11 @@ public class UserController {
             userDto.setBirthDate(user.getBirthDate());
             userDto.setFollowers(user.getFollowers().stream().map(UserModel::getId).collect(Collectors.toSet()));
             userDto.setFollowing(user.getFollowing().stream().map(UserModel::getId).collect(Collectors.toSet()));
+
+            List<FilmListDto> filmListDtos = filmListService.findFilmListsByUserId(user.getId());
+
+            userDto.setFilmLists(filmListDtos);
+
             return userDto;
         }).collect(Collectors.toList());
 
@@ -91,6 +112,10 @@ public class UserController {
         userDto.setBirthDate(user.getBirthDate());
         userDto.setFollowers(user.getFollowers().stream().map(UserModel::getId).collect(Collectors.toSet()));
         userDto.setFollowing(user.getFollowing().stream().map(UserModel::getId).collect(Collectors.toSet()));
+
+        List<FilmListDto> filmListDtos = filmListService.findFilmListsByUserId(user.getId());
+
+        userDto.setFilmLists(filmListDtos);
 
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
@@ -170,7 +195,7 @@ public class UserController {
             return ResponseEntity.ok("Followed successfully");
         }
 
-        return ResponseEntity.status(404).body("User not found");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
     }
 
     @Transactional
@@ -192,7 +217,7 @@ public class UserController {
             return ResponseEntity.ok("Unfollowed successfully");
         }
 
-        return ResponseEntity.status(404).body("User not found");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
     }
 
     @Transactional
@@ -213,6 +238,10 @@ public class UserController {
         userDto.setBirthDate(user.getBirthDate());
         userDto.setFollowers(user.getFollowers().stream().map(UserModel::getId).collect(Collectors.toSet()));
         userDto.setFollowing(user.getFollowing().stream().map(UserModel::getId).collect(Collectors.toSet()));
+
+        List<FilmListDto> filmListDtos = filmListService.findFilmListsByUserId(user.getId());
+
+        userDto.setFilmLists(filmListDtos);
 
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
@@ -284,5 +313,25 @@ public class UserController {
     private String getAuthenticatedUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication.getName();
+    }
+
+    // Helper method to convert FilmListModel to FilmListDto
+    private FilmListDto convertToFilmListDto(FilmListModel filmListModel) {
+        FilmListDto filmListDto = new FilmListDto();
+        BeanUtils.copyProperties(filmListModel, filmListDto);
+
+        List<MovieDto> movieDtos = filmListModel.getMovies().stream()
+                .map(this::convertToMovieDto)
+                .collect(Collectors.toList());
+        filmListDto.setMovies(movieDtos);
+
+        return filmListDto;
+    }
+
+    // Helper method to convert MovieModel to MovieDto
+    private MovieDto convertToMovieDto(MovieModel movieModel) {
+        MovieDto movieDto = new MovieDto();
+        BeanUtils.copyProperties(movieModel, movieDto);
+        return movieDto;
     }
 }
