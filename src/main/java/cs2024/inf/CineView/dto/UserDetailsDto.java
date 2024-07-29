@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
+import java.util.List;
 
 public class UserDetailsDto extends UserDto {
 
@@ -11,6 +12,8 @@ public class UserDetailsDto extends UserDto {
 
     private Set<UUID> followers;
     private Set<UUID> following;
+
+    private List<FilmListDto> filmLists;
 
     // Getters and Setters
 
@@ -36,5 +39,13 @@ public class UserDetailsDto extends UserDto {
 
     public void setFollowing(Set<UUID> following) {
         this.following = following;
+    }
+
+    public List<FilmListDto> getFilmLists() {
+        return filmLists;
+    }
+
+    public void setFilmLists(List<FilmListDto> filmLists) {
+        this.filmLists = filmLists;
     }
 }

@@ -36,6 +36,11 @@ public class FilmListService {
         return filmLists.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
+    public List<FilmListDto> findFilmListsByUserId(UUID userId) {
+        List<FilmListModel> filmLists = filmListRepository.findByUserId(userId);
+        return filmLists.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
     public FilmListDto findById(Long id) {
         Optional<FilmListModel> filmListOptional = filmListRepository.findById(id);
         if (filmListOptional.isPresent()) {
@@ -102,6 +107,11 @@ public class FilmListService {
                 .map(this::convertToMovieDto)
                 .collect(Collectors.toList());
         filmListDto.setMovies(movieDtos);
+
+        // Adiciona o userId ao DTO, se o usuário estiver presente
+        if (filmListModel.getUser() != null) {
+            filmListDto.setUserId(filmListModel.getUser().getId());
+        }
 
         return filmListDto;
     }
