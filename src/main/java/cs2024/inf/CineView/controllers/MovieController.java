@@ -1,6 +1,6 @@
 package cs2024.inf.CineView.controllers;
 
-import cs2024.inf.CineView.dto.movies.MoviesListDto;
+import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.repository.MovieRepository;
 import cs2024.inf.CineView.services.movieService.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,8 @@ public class MovieController {
     private MovieService movieService;
 
     @GetMapping
-    public ResponseEntity<MoviesListDto> getAllMovies(@RequestParam(value = "page", defaultValue = "0") int page,
-                                                      @RequestParam(value = "size", defaultValue = "10") int size) {
+    public ResponseEntity<GenericPageableList> getAllMovies(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                            @RequestParam(value = "size", defaultValue = "10") int size) {
         return ResponseEntity.status(HttpStatus.OK).body(movieService.getAllMovies(PageRequest.of(page, size)));
     }
 

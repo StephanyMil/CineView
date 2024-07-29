@@ -1,8 +1,8 @@
 package cs2024.inf.CineView.services.movieService;
 
+import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.dto.GenreDto;
 import cs2024.inf.CineView.dto.movies.MovieDto;
-import cs2024.inf.CineView.dto.movies.MoviesListDto;
 import cs2024.inf.CineView.handler.BusinessException;
 import cs2024.inf.CineView.models.MovieModel;
 import cs2024.inf.CineView.repository.MovieRepository;
@@ -24,11 +24,11 @@ public class MovieService {
 
 
     @Transactional
-    public MoviesListDto getAllMovies(Pageable pageable) {
+    public GenericPageableList getAllMovies(Pageable pageable) {
         Page<MovieModel> movies = movieRepository.findAll(pageable);
 
-        List<MovieDto> moviesDtos = movies.stream().map(this::convertToDTO).toList();
-        return new MoviesListDto(moviesDtos, pageable);
+        List<Object> moviesDtos = movies.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return new GenericPageableList(moviesDtos, pageable);
     }
 
 
