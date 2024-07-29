@@ -133,7 +133,6 @@ public class FilmListService {
         return filmLists.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-
     private FilmListDto convertToDto(FilmListModel filmListModel) {
         FilmListDto filmListDto = new FilmListDto();
         BeanUtils.copyProperties(filmListModel, filmListDto);
