@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -98,6 +99,40 @@ public class FilmListService {
             throw new BusinessException("Film list not found");
         }
     }
+
+    @Transactional
+    public void favoriteFilmList(UUID userId, Long filmListId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("User not found"));
+        FilmListModel filmList = filmListRepository.findById(filmListId)
+                .orElseThrow(() -> new BusinessException("Film list not found"));
+
+        if (!user.getFavoriteFilmLists().contains(filmList)) {
+            user.getFavoriteFilmLists().add(filmList);
+            userRepository.save(user);
+        }
+    }
+
+    @Transactional
+    public void unfavoriteFilmList(UUID userId, Long filmListId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("User not found"));
+        FilmListModel filmList = filmListRepository.findById(filmListId)
+                .orElseThrow(() -> new BusinessException("Film list not found"));
+
+        if (user.getFavoriteFilmLists().contains(filmList)) {
+            user.getFavoriteFilmLists().remove(filmList);
+            userRepository.save(user);
+        }
+    }
+
+    public List<FilmListDto> findFavoriteFilmListsByUserId(UUID userId) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("User not found"));
+        List<FilmListModel> filmLists = new ArrayList<>(user.getFavoriteFilmLists());
+        return filmLists.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
 
     private FilmListDto convertToDto(FilmListModel filmListModel) {
         FilmListDto filmListDto = new FilmListDto();

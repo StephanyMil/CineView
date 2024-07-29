@@ -31,6 +31,6 @@ public class FilmListDto {
         this.id = filmListModel.getId();
         this.name = filmListModel.getName();
         this.userId = filmListModel.getUser().getId();
-        this.movies = movieDtos;  // Assign the provided list of MovieDto directly
+        this.movies = movieDtos;
     }
 }
