@@ -331,6 +331,7 @@ public class UserController {
         }
     }
 
+    @Transactional
     @GetMapping("/{userId}/favorites")
     public ResponseEntity<List<FilmListDto>> getFavoriteFilmLists(@PathVariable UUID userId) {
         try {
