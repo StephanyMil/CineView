@@ -2,11 +2,14 @@ package cs2024.inf.CineView.services.movieService;
 
 import cs2024.inf.CineView.dto.GenreDto;
 import cs2024.inf.CineView.dto.movies.MovieDto;
+import cs2024.inf.CineView.dto.movies.MoviesListDto;
 import cs2024.inf.CineView.handler.BusinessException;
 import cs2024.inf.CineView.models.MovieModel;
 import cs2024.inf.CineView.repository.MovieRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +23,12 @@ public class MovieService {
     private MovieRepository movieRepository;
 
 
-    @Transactional(readOnly = true)
-    public List<MovieDto> getAllMovies() {
-        List<MovieModel> movies = movieRepository.findAll();
-        return movies.stream().map(this::convertToDTO).collect(Collectors.toList());
+    @Transactional
+    public MoviesListDto getAllMovies(Pageable pageable) {
+        Page<MovieModel> movies = movieRepository.findAll(pageable);
+
+        List<MovieDto> moviesDtos = movies.stream().map(this::convertToDTO).toList();
+        return new MoviesListDto(moviesDtos, pageable);
     }
 
 
