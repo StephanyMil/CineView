@@ -4,6 +4,7 @@ import cs2024.inf.CineView.dto.UserDto;
 import cs2024.inf.CineView.dto.UserDetailsDto;
 import cs2024.inf.CineView.dto.FilmListDto;
 import cs2024.inf.CineView.dto.movies.MovieDto;
+import cs2024.inf.CineView.handler.BusinessException;
 import cs2024.inf.CineView.models.FilmListModel;
 import cs2024.inf.CineView.models.MovieModel;
 import cs2024.inf.CineView.models.UserModel;
@@ -307,6 +308,36 @@ public class UserController {
         } catch (Exception e) {
             e.printStackTrace(); // Adicionando logging da exceção
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the user profile");
+        }
+    }
+
+    @PostMapping("/{userId}/favorites/{filmListId}")
+    public ResponseEntity<String> addFavoriteFilmList(@PathVariable UUID userId, @PathVariable Long filmListId) {
+        try {
+            filmListService.favoriteFilmList(userId, filmListId);
+            return ResponseEntity.status(HttpStatus.OK).body("Film list added to favorites.");
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User or film list not found.");
+        }
+    }
+
+    @DeleteMapping("/{userId}/favorites/{filmListId}")
+    public ResponseEntity<String> removeFavoriteFilmList(@PathVariable UUID userId, @PathVariable Long filmListId) {
+        try {
+            filmListService.unfavoriteFilmList(userId, filmListId);
+            return ResponseEntity.status(HttpStatus.OK).body("Film list removed from favorites.");
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User or film list not found.");
+        }
+    }
+
+    @GetMapping("/{userId}/favorites")
+    public ResponseEntity<List<FilmListDto>> getFavoriteFilmLists(@PathVariable UUID userId) {
+        try {
+            List<FilmListDto> favoriteFilmLists = filmListService.findFavoriteFilmListsByUserId(userId);
+            return ResponseEntity.status(HttpStatus.OK).body(favoriteFilmLists);
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 

@@ -6,11 +6,14 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
-public class UserModel implements Serializable {
-
+@Getter
+@Setter
+public class UserModel {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -19,72 +22,23 @@ public class UserModel implements Serializable {
     private String password;
     private Date birthDate;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_followers",
+    @ManyToMany
+    @JoinTable(name = "user_followers",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "follower_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "follower_id"))
     private Set<UserModel> followers = new HashSet<>();
 
-    @ManyToMany(mappedBy = "followers")
+    @ManyToMany
+    @JoinTable(name = "user_following",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "following_id"))
     private Set<UserModel> following = new HashSet<>();
 
-    // Getters and Setters
+    @ManyToMany
+    @JoinTable(name = "user_favorites",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "film_list_id"))
+    private Set<FilmListModel> favoriteFilmLists = new HashSet<>();
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Date getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public Set<UserModel> getFollowers() {
-        return followers;
-    }
-
-    public void setFollowers(Set<UserModel> followers) {
-        this.followers = followers;
-    }
-
-    public Set<UserModel> getFollowing() {
-        return following;
-    }
-
-    public void setFollowing(Set<UserModel> following) {
-        this.following = following;
-    }
+    // Getters and setters
 }
