@@ -20,9 +20,15 @@ public class ReportController {
         this.reportService = reportService;
     }
 
-    @PostMapping("/{userId}/{reviewId}")
+    @PostMapping("/review/{userId}/{reviewId}")
     public ResponseEntity<Object> reportReview(@PathVariable UUID userId, @PathVariable Long reviewId, @Valid @RequestBody ReportDto reportDto) {
-        Object reportDtoSaved = reportService.saveReport(userId, reviewId, reportDto);
+        Object reportDtoSaved = reportService.saveReport(userId, reviewId, null, reportDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(reportDtoSaved);
+    }
+
+    @PostMapping("/comment/{userId}/{commentId}")
+    public ResponseEntity<Object> reportComment(@PathVariable UUID userId, @PathVariable UUID commentId, @Valid @RequestBody ReportDto reportDto) {
+        Object reportDtoSaved = reportService.saveReport(userId, null, commentId, reportDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(reportDtoSaved);
     }
 }

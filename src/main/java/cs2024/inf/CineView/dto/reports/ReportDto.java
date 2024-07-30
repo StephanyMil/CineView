@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 public class ReportDto {
@@ -13,4 +15,7 @@ public class ReportDto {
 
     @NotNull(message = "The violation type can't be null")
     private ViolationType violationType;
+
+    private Long reviewId; // Id da review (opcional)
+    private UUID commentId; // Id do comentário (opcional)
 }

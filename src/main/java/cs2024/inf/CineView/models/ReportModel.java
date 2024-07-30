@@ -6,29 +6,36 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.UUID;
 
-@Entity
-@Table(name = "REPORTS")
-@Getter
 @Setter
+@Getter
+@Entity
 public class ReportModel {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private UserModel user;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "review_id")
-    private ReviewModel review;
-
+    @Column(nullable = false)
     private String reason;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ViolationType violationType;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     private Date reportDate;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserModel user;
+
+    @ManyToOne
+    @JoinColumn(name = "review_id")
+    private ReviewModel review;
+
+    @ManyToOne
+    @JoinColumn(name = "comment_id")
+    private CommentModel comment;
 }
