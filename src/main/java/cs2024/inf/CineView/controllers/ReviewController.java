@@ -2,6 +2,8 @@ package cs2024.inf.CineView.controllers;
 
 import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.dto.ReviewDto;
+import cs2024.inf.CineView.handler.BusinessException;
+import cs2024.inf.CineView.models.ReviewModel;
 import cs2024.inf.CineView.repository.ReviewRepository;
 import cs2024.inf.CineView.services.reviewService.ReviewService;
 import jakarta.validation.Valid;
@@ -25,10 +27,47 @@ public class ReviewController {
     @Autowired
     ReviewService reviewService;
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> editReview(@Valid @RequestBody ReviewDto reviewDto, @PathVariable(value = "id") Long id) {
+        try {
+            if (reviewRepository.findById(id).isPresent()) {
+                reviewDto.setId(id);
+                Object reviewDtoSaved = reviewService.editReview(reviewDto);
+                return ResponseEntity.status(HttpStatus.OK).body(reviewDtoSaved);
+            }
+            throw new BusinessException("Review not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+
+    }
+
     @PostMapping
     public ResponseEntity<Object> saveReview(@Valid @RequestBody ReviewDto reviewDto) {
-        Object reviewDtoSaved = reviewService.saveReview(reviewDto);
+        Object reviewDtoSaved = reviewService.postReview(reviewDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(reviewDtoSaved);
+    }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Object> likeReview(@PathVariable(value = "id") Long reviewId) {
+        try {
+            reviewService.incrementLikes(reviewId);
+            return ResponseEntity.status(HttpStatus.OK).body("review was liked");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+
+    }
+
+    @DeleteMapping("/{id}/like")
+    public ResponseEntity<Object> removeLike(@PathVariable(value = "id") Long reviewId) {
+        try {
+            ReviewModel review = reviewService.decreaseLike(reviewId);
+            return ResponseEntity.status(HttpStatus.OK).body("The review was desliked");
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}")
@@ -50,16 +89,15 @@ public class ReviewController {
     public ResponseEntity<Object> getMovieReviews(@PathVariable(value = "id") Long id, @RequestParam(value = "page") int page, @RequestParam(value = "pageSize") int pageSize) {
 
         GenericPageableList reviews = reviewService.findMovieReviews(id, PageRequest.of(page, pageSize));
-//        if (reviews.getResults().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("This user doesn't have reviews yet");
-//        }
+        if (reviews.getResults().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("This user doesn't have reviews yet");
+        }
         return ResponseEntity.status(HttpStatus.OK).body(reviews);
     }
 
     @GetMapping
     public ResponseEntity<List<ReviewDto>> getReviews() {
         return ResponseEntity.status(HttpStatus.OK).body(reviewService.findAll());
-
     }
 
     @DeleteMapping("/{id}")

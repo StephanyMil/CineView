@@ -24,4 +24,6 @@ public class ReviewDto {
     @NotNull(message = "the movie id can't be null")
     private Long movie_id;
 
+    private int likesQtd;
+
 }
