@@ -1,6 +1,6 @@
 package cs2024.inf.CineView.dto.reports;
 
-enum ViolationType {
+public enum ViolationType {
     HATE, // slurs, racism, dehumanization, hateful symbols etc.
     ABUSE_AND_HARASSMENT,
     VIOLENT_SPEECH,
