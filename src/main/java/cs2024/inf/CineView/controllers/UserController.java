@@ -1,8 +1,8 @@
 package cs2024.inf.CineView.controllers;
 
-import cs2024.inf.CineView.dto.UserDto;
-import cs2024.inf.CineView.dto.UserDetailsDto;
 import cs2024.inf.CineView.dto.FilmListDto;
+import cs2024.inf.CineView.dto.UserDetailsDto;
+import cs2024.inf.CineView.dto.UserDto;
 import cs2024.inf.CineView.dto.movies.MovieDto;
 import cs2024.inf.CineView.handler.BusinessException;
 import cs2024.inf.CineView.models.FilmListModel;
@@ -342,7 +342,7 @@ public class UserController {
         }
     }
 
-    private String getAuthenticatedUserEmail() {
+    public String getAuthenticatedUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication.getName();
     }
