@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/filmLists")
@@ -25,7 +24,7 @@ public class FilmListController {
 
     private ResponseEntity<String> checkAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in.");
         }
         return null;
@@ -37,8 +36,14 @@ public class FilmListController {
         ResponseEntity<String> authenticationError = checkAuthentication();
         if (authenticationError != null) return authenticationError;
 
-        FilmListDto createdFilmList = filmListService.createFilmList(filmListDto);
-        return new ResponseEntity<>(createdFilmList, HttpStatus.CREATED);
+        try {
+            FilmListDto createdFilmList = filmListService.createFilmList(filmListDto);
+            return new ResponseEntity<>(createdFilmList, HttpStatus.CREATED);
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while creating the film list.");
+        }
     }
 
     @Transactional
@@ -47,8 +52,12 @@ public class FilmListController {
         ResponseEntity<String> authenticationError = checkAuthentication();
         if (authenticationError != null) return authenticationError;
 
-        List<FilmListDto> filmLists = filmListService.findAll();
-        return new ResponseEntity<>(filmLists, HttpStatus.OK);
+        try {
+            List<FilmListDto> filmLists = filmListService.findAll();
+            return new ResponseEntity<>(filmLists, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while retrieving the film lists.");
+        }
     }
 
     @Transactional
@@ -61,7 +70,9 @@ public class FilmListController {
             FilmListDto filmList = filmListService.findById(id);
             return new ResponseEntity<>(filmList, HttpStatus.OK);
         } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Film list not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while retrieving the film list.");
         }
     }
 
@@ -75,7 +86,9 @@ public class FilmListController {
             FilmListDto updatedFilmList = filmListService.updateFilmList(id, filmListDto);
             return new ResponseEntity<>(updatedFilmList, HttpStatus.OK);
         } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Film list not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the film list.");
         }
     }
 
@@ -89,7 +102,9 @@ public class FilmListController {
             filmListService.deleteFilmList(id);
             return ResponseEntity.ok("Film list deleted successfully.");
         } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Film list not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the film list.");
         }
     }
 }
