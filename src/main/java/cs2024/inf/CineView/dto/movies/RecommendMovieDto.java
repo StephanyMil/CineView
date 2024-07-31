@@ -1,15 +1,13 @@
 package cs2024.inf.CineView.dto.movies;
 
-import cs2024.inf.CineView.dto.GenreDto;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
-public class MovieDto {
+public class RecommendMovieDto {
 
     private Long id;
     private String title;
@@ -19,6 +17,5 @@ public class MovieDto {
     private Double popularity;
     private Double vote_average;
     private Long vote_count;
-    private List<GenreDto> genreModels;
 
 }

@@ -82,6 +82,9 @@ public class ReviewService {
     public void incrementLikes(Long reviewId) {
         String userEmail = userService.getAuthenticatedUserEmail();
         UserModel userModel = userService.findByEmail(userEmail);
+        if (userModel == null) {
+            throw new BusinessException("The login session has expired");
+        }
         ReviewModel review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BusinessException("Review not found"));
         Optional<LikeModel> optionalLike = likeRepository.findByReviewIdAndUserId(reviewId, userModel.getId());
@@ -174,6 +177,5 @@ public class ReviewService {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
 
 }
