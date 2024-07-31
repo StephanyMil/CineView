@@ -210,6 +210,14 @@ public class UserController {
     @PostMapping("/{userId}/follow/{followId}")
     public ResponseEntity<?> followUser(@PathVariable UUID userId, @PathVariable UUID followId) {
         try {
+            String loggedInUserEmail = getAuthenticatedUserEmail();
+            Optional<UserModel> loggedInUserOptional = userRepository.findByEmail(loggedInUserEmail);
+
+            // Check if the logged-in user is the same as the userId in the request
+            if (loggedInUserOptional.isEmpty() || !loggedInUserOptional.get().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            }
+
             Optional<UserModel> userOptional = userRepository.findById(userId);
             Optional<UserModel> followOptional = userRepository.findById(followId);
 
@@ -237,6 +245,14 @@ public class UserController {
     @PostMapping("/{userId}/unfollow/{followId}")
     public ResponseEntity<?> unfollowUser(@PathVariable UUID userId, @PathVariable UUID followId) {
         try {
+            String loggedInUserEmail = getAuthenticatedUserEmail();
+            Optional<UserModel> loggedInUserOptional = userRepository.findByEmail(loggedInUserEmail);
+
+            // Check if the logged-in user is the same as the userId in the request
+            if (loggedInUserOptional.isEmpty() || !loggedInUserOptional.get().getId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            }
+
             Optional<UserModel> userOptional = userRepository.findById(userId);
             Optional<UserModel> followOptional = userRepository.findById(followId);
 
