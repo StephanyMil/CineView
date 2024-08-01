@@ -85,10 +85,15 @@ Após iniciar o projeto, você pode testar as funcionalidades através de chamad
    }
    ```
 
-* **Adicionar um filme à lista de favoritos:**
+* **Usuário fazer login:**
 
    ```bash
-   POST http://localhost:8080/users/{userId}/favorites/{filmListId}
+   POST http://localhost:8080/auth/login
+   BODY: application/json
+   {
+      "email": "usuario@email.com",
+      "password": "senha123"
+   }
 
    ```
 
