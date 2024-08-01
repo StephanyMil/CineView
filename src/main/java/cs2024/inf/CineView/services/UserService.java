@@ -1,5 +1,6 @@
 package cs2024.inf.CineView.services;
 
+import cs2024.inf.CineView.handler.BusinessException;
 import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +43,16 @@ public class UserService {
     public String getAuthenticatedUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication.getName();
+    }
+
+    public UserModel getUserByAuth() {
+        String userEmail = getAuthenticatedUserEmail();
+
+        if (userEmail.equals("anonymousUser")) {
+            throw new BusinessException("The login session has expired");
+        }
+        UserModel user = userRepository.findByEmail(userEmail).orElseThrow(() -> new BusinessException("User not found"));
+
+        return user;
     }
 }

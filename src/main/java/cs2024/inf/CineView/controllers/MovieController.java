@@ -5,6 +5,7 @@ import cs2024.inf.CineView.handler.BusinessException;
 import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.MovieRepository;
 import cs2024.inf.CineView.repository.UserRepository;
+import cs2024.inf.CineView.services.UserService;
 import cs2024.inf.CineView.services.movieService.MovieService;
 import cs2024.inf.CineView.services.movieService.RecommendationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Optional;
-import java.util.UUID;
-
 @Controller
 @RequestMapping("movies")
 public class MovieController {
@@ -29,6 +27,9 @@ public class MovieController {
 
     @Autowired
     private MovieService movieService;
+
+    @Autowired
+    private UserService userService;
 
 
     @Autowired
@@ -48,17 +49,14 @@ public class MovieController {
         return ResponseEntity.status(HttpStatus.OK).body(movieService.getMovieById(id));
     }
 
-    @GetMapping("/{user_id}/recommended")
-    public ResponseEntity<Object> getRecommendedMoviesByUser(@PathVariable(value = "user_id") UUID id) {
+    @GetMapping("/recommended")
+    public ResponseEntity<Object> getRecommendedMoviesByUser() {
         try {
-            Optional<UserModel> user = userRepository.findById(id);
-            if (user.isEmpty()) {
-                throw new BusinessException("User not found");
-            }
-            return ResponseEntity.status(HttpStatus.OK).body(recommendationService.getRecommendedMovies(user.get()));
+            UserModel user = userService.getUserByAuth();
+            return ResponseEntity.status(HttpStatus.OK).body(recommendationService.getRecommendedMovies(user));
 
         } catch (BusinessException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

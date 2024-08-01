@@ -24,8 +24,10 @@ public class MovieModel {
     private String overview;
 
     private String releaseDate;
-    private Double voteAverage;
-    private Long voteCount;
+    private Double voteAverage = 0D;
+    private Long voteCount = 0L;
+
+    private Double totalReviewVotes = 0D;
 
     private Double popularity;
 

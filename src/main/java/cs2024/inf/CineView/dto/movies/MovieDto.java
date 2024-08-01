@@ -4,7 +4,6 @@ import cs2024.inf.CineView.dto.GenreDto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -14,11 +13,10 @@ public class MovieDto {
     private Long id;
     private String title;
     private String overview;
-    private Date releaseDate;
-    private float voteAverage;
+    private String releaseDate;
     private Double popularity;
-    private Double vote_average;
-    private Long vote_count;
+    private Double voteAverage;
+    private Long voteCount;
     private List<GenreDto> genreModels;
 
 }
