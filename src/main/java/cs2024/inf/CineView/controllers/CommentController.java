@@ -2,12 +2,18 @@ package cs2024.inf.CineView.controllers;
 
 import cs2024.inf.CineView.dto.CommentDto;
 import cs2024.inf.CineView.models.CommentModel;
+import cs2024.inf.CineView.models.UserModel;
+import cs2024.inf.CineView.repository.UserRepository;
 import cs2024.inf.CineView.services.CommentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -16,12 +22,21 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public CommentController(CommentService commentService) {
         this.commentService = commentService;
     }
 
     @PostMapping
-    public ResponseEntity<CommentDto> createCommentary(@RequestBody CommentDto commentDto) {
+    public ResponseEntity<?> createCommentary(@RequestBody CommentDto commentDto) {
+        String userEmail = getAuthenticatedUserEmail();
+        Optional<UserModel> userOptional = userRepository.findByEmail(userEmail);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+        }
+        commentDto.setUserId(userOptional.get().getId());
         CommentModel commentModel = commentService.createCommentary(commentDto);
         CommentDto commentDtoCreated = new CommentDto(commentModel);
         return new ResponseEntity<>(commentDtoCreated, HttpStatus.CREATED);
@@ -37,7 +52,7 @@ public class CommentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommentDto> getCommentaryById(@PathVariable UUID id) { // Use UUID aqui
+    public ResponseEntity<CommentDto> getCommentaryById(@PathVariable UUID id) {
         CommentModel commentary = commentService.getCommentaryById(id);
         if (commentary == null) {
             return ResponseEntity.notFound().build();
@@ -47,18 +62,42 @@ public class CommentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CommentDto> editCommentary(@PathVariable UUID id, @RequestBody CommentDto commentDto) { // Use UUID aqui
-        CommentModel commentModel = commentService.editCommentary(id, commentDto);
-        if (commentModel == null) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> editCommentary(@PathVariable UUID id, @RequestBody CommentDto commentDto) {
+        String userEmail = getAuthenticatedUserEmail();
+        Optional<UserModel> userOptional = userRepository.findByEmail(userEmail);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
         }
+        CommentModel existingComment = commentService.getCommentaryById(id);
+        if (existingComment == null || !existingComment.getUser().getId().equals(userOptional.get().getId())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized to edit this comment.");
+        }
+        commentDto.setUserId(userOptional.get().getId());
+        CommentModel commentModel = commentService.editCommentary(id, commentDto);
         CommentDto commentDtoUpdated = new CommentDto(commentModel);
         return new ResponseEntity<>(commentDtoUpdated, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCommentary(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteCommentary(@PathVariable UUID id) {
+        String userEmail = getAuthenticatedUserEmail();
+        Optional<UserModel> userOptional = userRepository.findByEmail(userEmail);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+        }
+        CommentModel existingComment = commentService.getCommentaryById(id);
+        if (existingComment == null || !existingComment.getUser().getId().equals(userOptional.get().getId())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized to delete this comment.");
+        }
         commentService.deleteCommentary(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private String getAuthenticatedUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new SecurityException("User not authenticated");
+        }
+        return authentication.getName();
     }
 }
