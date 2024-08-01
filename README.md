@@ -63,7 +63,7 @@ Base para pegarmos os gêneros de filmes: https://api.themoviedb.org/3/genre/mov
 3. **Execute o projeto:**
 
    ```bash
-   ./mvnw spring-boot:run
+   mvn spring-boot:run
    ```
 
 ## Testando a Aplicação
