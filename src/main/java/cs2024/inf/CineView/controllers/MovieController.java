@@ -60,4 +60,11 @@ public class MovieController {
         }
     }
 
+    @GetMapping("/popular-movies")
+    public ResponseEntity<GenericPageableList> getPopularMovies(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.status(HttpStatus.OK).body(movieService.getPopularMovies(page, size));
+    }
+
 }

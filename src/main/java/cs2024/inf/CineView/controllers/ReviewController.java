@@ -84,7 +84,7 @@ public class ReviewController {
     }
 
     @GetMapping("movie/{id}")
-    public ResponseEntity<Object> getMovieReviews(@PathVariable(value = "id") Long id, @RequestParam(value = "page") int page, @RequestParam(value = "pageSize") int pageSize) {
+    public ResponseEntity<Object> getMovieReviews(@PathVariable(value = "id") Long id, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
 
         GenericPageableList reviews = reviewService.findMovieReviews(id, PageRequest.of(page, pageSize));
         if (reviews.getResults().isEmpty()) {

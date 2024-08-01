@@ -14,7 +14,6 @@ public class MovieDto {
     private String title;
     private String overview;
     private String releaseDate;
-    private Double popularity;
     private Double voteAverage;
     private Long voteCount;
     private List<GenreDto> genreModels;

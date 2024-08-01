@@ -9,10 +9,12 @@ import cs2024.inf.CineView.repository.MovieRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,5 +53,27 @@ public class MovieService {
                 }).collect(Collectors.toList());
         movieDto.setGenreModels(genres);
         return movieDto;
+    }
+
+
+    @Transactional
+    public GenericPageableList getPopularMovies(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        List<MovieModel> mostReviewedAndLikedMovies = movieRepository.findMostReviewedAndLikedMovies(PageRequest.of(0, 20));
+        List<Object[]> queryResult = movieRepository.findMostSavedInLists();
+
+        List<Long> movieIdList = new ArrayList<>();
+        for (Object[] result : queryResult) {
+            Long id = ((Number) result[0]).longValue();
+            movieIdList.add(id);
+        }
+        List<MovieModel> mostFavoritedMovies = movieRepository.findAllById(movieIdList);
+
+        List<MovieModel> popularMovies = new ArrayList<>(mostReviewedAndLikedMovies);
+        popularMovies.addAll(mostFavoritedMovies);
+
+        List<Object> popularMoviesDtos = popularMovies.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return new GenericPageableList(popularMoviesDtos, pageable);
     }
 }

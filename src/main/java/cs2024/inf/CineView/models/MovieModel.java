@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "MOVIE-DB")
+@Table(name = "MOVIE_DB")
 @Getter
 @Setter
 public class MovieModel {
