@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +40,7 @@ public class ReviewService {
 
     @Autowired
     private MovieRepository movieRepository;
+
     @Autowired
     private UserService userService;
 
@@ -58,8 +58,9 @@ public class ReviewService {
     }
 
     @Transactional
-    public List<ReviewDto> findByUser(UUID id, Pageable pageable) {
-        Page<ReviewModel> userReviewList = reviewRepository.findByUserId(id, pageable);
+    public List<ReviewDto> findByUser(Pageable pageable) {
+        UserModel userModel = userService.getUserByAuth();
+        Page<ReviewModel> userReviewList = reviewRepository.findByUserId(userModel.getId(), pageable);
         return userReviewList.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
@@ -80,11 +81,7 @@ public class ReviewService {
 
     @Transactional
     public void incrementLikes(Long reviewId) {
-        String userEmail = userService.getAuthenticatedUserEmail();
-        UserModel userModel = userService.findByEmail(userEmail);
-        if (userModel == null) {
-            throw new BusinessException("The login session has expired");
-        }
+        UserModel userModel = userService.getUserByAuth();
         ReviewModel review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BusinessException("Review not found"));
         Optional<LikeModel> optionalLike = likeRepository.findByReviewIdAndUserId(reviewId, userModel.getId());
@@ -105,8 +102,7 @@ public class ReviewService {
 
     @Transactional
     public ReviewModel decreaseLike(Long reviewId) {
-        String userEmail = userService.getAuthenticatedUserEmail();
-        UserModel userModel = userService.findByEmail(userEmail);
+        UserModel userModel = userService.getUserByAuth();
         Optional<ReviewModel> optionalReview = reviewRepository.findById(reviewId);
         if (optionalReview.isPresent()) {
             ReviewModel review = optionalReview.get();
@@ -129,13 +125,18 @@ public class ReviewService {
 
     @Transactional
     public Object postReview(ReviewDto reviewDto) {
-        UUID userId = reviewDto.getUser_id();
+        String userEmail = userService.getAuthenticatedUserEmail();
+
+        if (userEmail.equals("anonymousUser")) {
+            throw new BusinessException("The login session has expired");
+        }
+        UserModel user = userRepository.findByEmail(userEmail).orElseThrow(() -> new BusinessException("User not found"));
+
         Long movieId = reviewDto.getMovie_id();
-        UserModel user = userRepository.findById(userId).orElseThrow(() -> new BusinessException("User not found"));
         MovieModel movie = movieRepository.findById(movieId).orElseThrow(() -> new BusinessException("Movie doen't exist in our database"));
 
         if (reviewDto.getRating() > 5 || reviewDto.getRating() < 1) {
-            throw new BusinessException("The rating is invalid");
+            throw new BusinessException("The rating is invalid. It should be between 1 and 5");
         }
         if (reviewRepository.existsByUserIdAndMovieId(reviewDto.getUser_id(), movie.getId())) {
             throw new BusinessException("User has already reviewed this movie");
@@ -147,11 +148,14 @@ public class ReviewService {
 
     @Transactional
     public Object editReview(ReviewDto reviewDto) {
-        UUID userId = reviewDto.getUser_id();
+        UserModel user = userService.getUserByAuth();
+
         Long movieId = reviewDto.getMovie_id();
-        UserModel user = userRepository.findById(userId).orElseThrow(() -> new BusinessException("User not found"));
         MovieModel movie = movieRepository.findById(movieId).orElseThrow(() -> new BusinessException("Movie doen't exist in our database"));
 
+        if (reviewDto.getRating() > 5 || reviewDto.getRating() < 1) {
+            throw new BusinessException("It should be between 1 and 5");
+        }
         return this.saveReview(user, reviewDto, movie);
 
     }
@@ -165,6 +169,11 @@ public class ReviewService {
             reviewModel.setMovie(movieModel);
             reviewModel.setPublicationDate(new Date());
 
+            movieModel.setTotalReviewVotes(movieModel.getTotalReviewVotes() + reviewModel.getRating());
+            movieModel.setVoteCount(movieModel.getVoteCount() + 1);
+            movieModel.setVoteAverage(movieModel.getTotalReviewVotes() / movieModel.getVoteCount());
+            movieRepository.save(movieModel);
+
             ReviewModel savedReview = reviewRepository.save(reviewModel);
             ReviewDto savedReviewDto = new ReviewDto();
             BeanUtils.copyProperties(savedReview, savedReviewDto);
@@ -177,5 +186,6 @@ public class ReviewService {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 
 }

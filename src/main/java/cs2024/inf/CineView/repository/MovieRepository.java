@@ -22,4 +22,22 @@ public interface MovieRepository extends JpaRepository<MovieModel, Long> {
             "WHERE k.id IN :keywordIds " +
             "GROUP BY m.id")
     Page<MovieModel> findMoviesByCommonKeywords(@Param("keywordIds") Set<Long> keywordIds, Pageable pageable);
+
+
+    //filmes com mais reviews, ordenados por avaliação e quantidade de likes
+    @Query("SELECT m FROM MovieModel m inner JOIN ReviewModel  r on r.movie = m GROUP BY m ORDER BY COUNT(r.id) DESC, m.voteAverage desc, SUM(r.likesQtd) DESC")
+    List<MovieModel> findMostReviewedAndLikedMovies(Pageable pageable);
+
+
+    @Query(value = "SELECT m.id, m.title, COUNT(flm.film_list_id) AS listCount, COUNT(uf.film_list_id) AS favoritesCount " +
+            "FROM movie_db m " +
+            "INNER JOIN film_list_movies flm ON m.id = flm.movie_id " +
+            "LEFT JOIN film_lists fl ON fl.id = flm.film_list_id " +
+            "LEFT JOIN user_favorites uf ON uf.film_list_id = fl.id " +
+            "GROUP BY m.id, m.title " +
+            "ORDER BY listCount DESC, favoritesCount DESC " +
+            "LIMIT 10",
+            nativeQuery = true)
+    List<Object[]> findMostSavedInLists();
+
 }

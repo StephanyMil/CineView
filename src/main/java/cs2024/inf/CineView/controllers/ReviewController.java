@@ -3,7 +3,6 @@ package cs2024.inf.CineView.controllers;
 import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.dto.ReviewDto;
 import cs2024.inf.CineView.handler.BusinessException;
-import cs2024.inf.CineView.models.ReviewModel;
 import cs2024.inf.CineView.repository.ReviewRepository;
 import cs2024.inf.CineView.services.reviewService.ReviewService;
 import jakarta.validation.Valid;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("reviews")
@@ -63,7 +61,7 @@ public class ReviewController {
     @DeleteMapping("/{id}/like")
     public ResponseEntity<Object> removeLike(@PathVariable(value = "id") Long reviewId) {
         try {
-            ReviewModel review = reviewService.decreaseLike(reviewId);
+            reviewService.decreaseLike(reviewId);
             return ResponseEntity.status(HttpStatus.OK).body("The review was desliked");
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
@@ -75,10 +73,10 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.OK).body(reviewService.findById(id));
     }
 
-    @GetMapping("user/{id}")
-    public ResponseEntity<Object> getReviewByUser(@PathVariable(value = "id") UUID id, @RequestParam(value = "page") int page, @RequestParam(value = "pageSize") int pageSize) {
+    @GetMapping("/user")
+    public ResponseEntity<Object> getReviewByUser(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
 
-        List<ReviewDto> reviews = reviewService.findByUser(id, PageRequest.of(page, pageSize));
+        List<ReviewDto> reviews = reviewService.findByUser(PageRequest.of(page, pageSize));
         if (reviews.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("This user doesn't have reviews yet");
         }
@@ -86,7 +84,7 @@ public class ReviewController {
     }
 
     @GetMapping("movie/{id}")
-    public ResponseEntity<Object> getMovieReviews(@PathVariable(value = "id") Long id, @RequestParam(value = "page") int page, @RequestParam(value = "pageSize") int pageSize) {
+    public ResponseEntity<Object> getMovieReviews(@PathVariable(value = "id") Long id, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
 
         GenericPageableList reviews = reviewService.findMovieReviews(id, PageRequest.of(page, pageSize));
         if (reviews.getResults().isEmpty()) {
