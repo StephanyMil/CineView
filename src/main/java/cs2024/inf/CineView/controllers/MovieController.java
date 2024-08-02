@@ -50,10 +50,10 @@ public class MovieController {
     }
 
     @GetMapping("/recommended")
-    public ResponseEntity<Object> getRecommendedMoviesByUser() {
+    public ResponseEntity<Object> getRecommendedMoviesByUser(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "10") int size) {
         try {
             UserModel user = userService.getUserByAuth();
-            return ResponseEntity.status(HttpStatus.OK).body(recommendationService.getRecommendedMovies(user));
+            return ResponseEntity.status(HttpStatus.OK).body(recommendationService.getRecommendedMovies(user, PageRequest.of(page, size)));
 
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

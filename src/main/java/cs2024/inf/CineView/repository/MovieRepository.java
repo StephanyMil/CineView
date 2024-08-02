@@ -2,7 +2,6 @@ package cs2024.inf.CineView.repository;
 
 import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.models.MovieModel;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,10 +23,11 @@ public interface MovieRepository extends JpaRepository<MovieModel, Long> {
     List<MovieModel> findMovieModelsByGenreModels(GenreModel genre);
 
     @Query("SELECT m FROM MovieModel m " +
-            "JOIN m.keywords k " +
-            "WHERE k.id IN :keywordIds " +
-            "GROUP BY m.id")
-    Page<MovieModel> findMoviesByCommonKeywords(@Param("keywordIds") Set<Long> keywordIds, Pageable pageable);
+            "inner JOIN m.keywords k " +
+            "where k.id IN :keywordIds " +
+            "GROUP BY m.id order by count (k.id)"
+    )
+    List<MovieModel> findMoviesByCommonKeywords(@Param("keywordIds") Set<Long> keywordIds);
 
 
     //filmes com mais reviews, ordenados por avaliação e quantidade de likes
