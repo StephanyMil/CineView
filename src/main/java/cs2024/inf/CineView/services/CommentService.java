@@ -1,18 +1,23 @@
 package cs2024.inf.CineView.services;
 
 import cs2024.inf.CineView.dto.CommentDto;
+import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.models.CommentModel;
 import cs2024.inf.CineView.models.ReviewModel;
 import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.CommentRepository;
 import cs2024.inf.CineView.repository.ReviewRepository;
 import cs2024.inf.CineView.repository.UserRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -53,7 +58,6 @@ public class CommentService {
         if (commentModelOptional.isPresent()) {
             CommentModel commentModel = commentModelOptional.get();
             commentModel.setText(commentDto.getText());
-
             return commentRepository.save(commentModel);
         }
         return null;
@@ -63,7 +67,15 @@ public class CommentService {
         commentRepository.deleteById(id);
     }
 
-    public List<CommentModel> listCommentaries() {
-        return commentRepository.findAll();
+    public GenericPageableList listCommentaries(Pageable pageable) {
+        Page<CommentModel> commentPage = commentRepository.findAll(pageable);
+        List<Object> commentDtos = commentPage.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return new GenericPageableList(commentDtos, pageable);
+    }
+
+    private CommentDto convertToDTO(CommentModel commentModel) {
+        CommentDto commentDto = new CommentDto();
+        BeanUtils.copyProperties(commentModel, commentDto);
+        return commentDto;
     }
 }

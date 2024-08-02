@@ -1,5 +1,6 @@
 package cs2024.inf.CineView.services;
 
+import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.dto.reports.ReportDto;
 import cs2024.inf.CineView.handler.BusinessException;
 import cs2024.inf.CineView.models.ReportModel;
@@ -13,10 +14,14 @@ import cs2024.inf.CineView.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportService {
@@ -59,5 +64,17 @@ public class ReportService {
         BeanUtils.copyProperties(savedReport, savedReportDto);
 
         return savedReportDto;
+    }
+
+    public GenericPageableList listReports(Pageable pageable) {
+        Page<ReportModel> reportPage = reportRepository.findAll(pageable);
+        List<Object> reportDtos = reportPage.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return new GenericPageableList(reportDtos, pageable);
+    }
+
+    private ReportDto convertToDTO(ReportModel reportModel) {
+        ReportDto reportDto = new ReportDto();
+        BeanUtils.copyProperties(reportModel, reportDto);
+        return reportDto;
     }
 }
