@@ -85,8 +85,8 @@ public class ReviewService {
     }
 
     @Transactional
-    public void incrementLikes(Long reviewId) {
-        UserModel userModel = userService.getUserByAuth();
+    public void incrementLikes(Long reviewId, UserModel userModel) {
+
         ReviewModel review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new BusinessException("Review not found"));
         Optional<LikeModel> optionalLike = likeRepository.findByReviewIdAndUserId(reviewId, userModel.getId());

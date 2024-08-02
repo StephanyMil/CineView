@@ -56,7 +56,8 @@ public class ReviewController {
     @PostMapping("/{id}/like")
     public ResponseEntity<Object> likeReview(@PathVariable(value = "id") Long reviewId) {
         try {
-            reviewService.incrementLikes(reviewId);
+            UserModel userModel = userService.getUserByAuth();
+            reviewService.incrementLikes(reviewId, userModel);
             return ResponseEntity.status(HttpStatus.OK).body("review was liked");
 
         } catch (Exception e) {
