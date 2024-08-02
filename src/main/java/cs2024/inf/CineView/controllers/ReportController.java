@@ -1,11 +1,13 @@
 package cs2024.inf.CineView.controllers;
 
+import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.dto.reports.ReportDto;
 import cs2024.inf.CineView.services.ReportService;
 import cs2024.inf.CineView.repository.UserRepository;
 import cs2024.inf.CineView.models.UserModel;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -53,6 +55,12 @@ public class ReportController {
 
         Object reportDtoSaved = reportService.saveReport(userId, null, commentId, reportDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(reportDtoSaved);
+    }
+
+    @GetMapping("{userId}")
+    public ResponseEntity<GenericPageableList> listReports(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                           @RequestParam(value = "size", defaultValue = "10") int size) {
+        return ResponseEntity.status(HttpStatus.OK).body(reportService.listReports(PageRequest.of(page, size)));
     }
 
     private String getAuthenticatedUserEmail() {
