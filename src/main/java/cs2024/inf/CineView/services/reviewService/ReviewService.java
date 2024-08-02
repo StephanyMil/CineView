@@ -116,7 +116,7 @@ public class ReviewService {
 
                 return review;
             } else {
-                throw new BusinessException("Like not found");
+                throw new BusinessException("This user didn't liked the review");
             }
         } else {
             throw new BusinessException("Review not found");

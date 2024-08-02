@@ -3,7 +3,10 @@ package cs2024.inf.CineView.controllers;
 import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.dto.ReviewDto;
 import cs2024.inf.CineView.handler.BusinessException;
+import cs2024.inf.CineView.models.ReviewModel;
+import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.ReviewRepository;
+import cs2024.inf.CineView.services.UserService;
 import cs2024.inf.CineView.services.reviewService.ReviewService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("reviews")
@@ -24,6 +28,9 @@ public class ReviewController {
 
     @Autowired
     ReviewService reviewService;
+
+    @Autowired
+    UserService userService;
 
     @PutMapping("/{id}")
     public ResponseEntity<Object> editReview(@Valid @RequestBody ReviewDto reviewDto, @PathVariable(value = "id") Long id) {
@@ -100,12 +107,22 @@ public class ReviewController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteReview(@PathVariable(value = "id") Long id) {
-        if (!reviewRepository.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review does not exist");
-        }
+        try {
+            Optional<ReviewModel> review = reviewRepository.findById(id);
+            if (review.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review does not exist");
+            }
+            UserModel user = userService.getUserByAuth();
+            if (user.getId() != review.get().getUser().getId()) {
+                throw new BusinessException("You are not authorized to delete this review");
+            }
 
-        reviewRepository.delete(reviewRepository.findById(id).get());
-        return ResponseEntity.status(HttpStatus.OK).body("Review deleted successfully");
+            reviewRepository.delete(reviewRepository.findById(id).get());
+            return ResponseEntity.status(HttpStatus.OK).body("Review deleted successfully");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 
 }
