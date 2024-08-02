@@ -1,18 +1,19 @@
 package cs2024.inf.CineView.controllers;
 
 import cs2024.inf.CineView.dto.CommentDto;
+import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.models.CommentModel;
 import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.UserRepository;
 import cs2024.inf.CineView.services.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,12 +44,9 @@ public class CommentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CommentDto>> listCommentaries() {
-        List<CommentModel> commentaries = commentService.listCommentaries();
-        List<CommentDto> commentDto = commentaries.stream()
-                .map(CommentDto::new)
-                .toList();
-        return new ResponseEntity<>(commentDto, HttpStatus.OK);
+    public ResponseEntity<GenericPageableList> listCommentaries(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                                @RequestParam(value = "size", defaultValue = "10") int size) {
+        return ResponseEntity.status(HttpStatus.OK).body(commentService.listCommentaries(PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")
