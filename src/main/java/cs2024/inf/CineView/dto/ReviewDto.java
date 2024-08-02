@@ -18,7 +18,6 @@ public class ReviewDto {
     @NotNull(message = "the rating can't be null")
     private Double rating;
 
-    @NotNull(message = "the user id can't be null")
     private UUID user_id;
 
     @NotNull(message = "the movie id can't be null")
