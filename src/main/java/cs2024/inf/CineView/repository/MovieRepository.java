@@ -1,5 +1,6 @@
 package cs2024.inf.CineView.repository;
 
+import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.models.MovieModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,11 @@ public interface MovieRepository extends JpaRepository<MovieModel, Long> {
     @Query("SELECT m FROM MovieModel m JOIN m.keywords k on k.name IN :keywords")
     List<MovieModel> findByKeywordsIn(Set<String> keywords, Pageable pageable);
 
+    List<MovieModel> findByTitleContainingIgnoreCase(String title);
+
+    List<MovieModel> findMovieModelsByTitleContainingIgnoreCaseAndGenreModels(String title, GenreModel genre);
+
+    List<MovieModel> findMovieModelsByGenreModels(GenreModel genre);
 
     @Query("SELECT m FROM MovieModel m " +
             "JOIN m.keywords k " +

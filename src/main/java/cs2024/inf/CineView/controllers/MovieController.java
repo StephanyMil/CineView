@@ -67,4 +67,10 @@ public class MovieController {
         return ResponseEntity.status(HttpStatus.OK).body(movieService.getPopularMovies(page, size));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<GenericPageableList> searchMoviesByTitle(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "10") int size, @RequestParam(value = "search", defaultValue = "") String search, @RequestParam(value = "genre", defaultValue = "") Long genre) {
+        GenericPageableList movies = movieService.searchMoviesByTitle(search, genre, PageRequest.of(page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(movies);
+    }
+
 }

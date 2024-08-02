@@ -4,7 +4,9 @@ import cs2024.inf.CineView.dto.GenericPageableList;
 import cs2024.inf.CineView.dto.GenreDto;
 import cs2024.inf.CineView.dto.movies.MovieDto;
 import cs2024.inf.CineView.handler.BusinessException;
+import cs2024.inf.CineView.models.GenreModel;
 import cs2024.inf.CineView.models.MovieModel;
+import cs2024.inf.CineView.repository.GenreRepository;
 import cs2024.inf.CineView.repository.MovieRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class MovieService {
 
     @Autowired
     private MovieRepository movieRepository;
+
+    @Autowired
+    private GenreRepository genreRepository;
 
 
     @Transactional
@@ -75,5 +80,29 @@ public class MovieService {
 
         List<Object> popularMoviesDtos = popularMovies.stream().map(this::convertToDTO).collect(Collectors.toList());
         return new GenericPageableList(popularMoviesDtos, pageable);
+    }
+
+    @Transactional
+    public GenericPageableList searchMoviesByTitle(String title, Long genre_id, Pageable page) {
+        List<MovieModel> movieSearchResult = new ArrayList<>();
+
+        if (genre_id != null && genre_id > 0) {
+            GenreModel genre = genreRepository.findById(genre_id.intValue()).orElseThrow(() -> new BusinessException("Genre not found with id " + genre_id));
+            if (!title.isEmpty()) {
+                movieSearchResult = movieRepository.findMovieModelsByTitleContainingIgnoreCaseAndGenreModels(title, genre);
+            } else movieSearchResult = movieRepository.findMovieModelsByGenreModels(genre);
+        }
+        //se tiver só o titulo
+        if (!title.isEmpty() && (genre_id == null || genre_id == 0)) {
+            movieSearchResult = movieRepository.findByTitleContainingIgnoreCase(title);
+
+        }
+
+        if (movieSearchResult.isEmpty()) {
+            throw new BusinessException("No movies found with title containing: " + title);
+        }
+        List<Object> movieDtos = movieSearchResult.stream().map(this::convertToDTO).collect(Collectors.toList());
+
+        return new GenericPageableList(movieDtos, page);
     }
 }
