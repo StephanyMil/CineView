@@ -51,10 +51,15 @@ public class ReviewService {
 
     @Transactional
     public Object findById(Long id) {
-        if (!reviewRepository.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review does not exist");
+        try {
+            if (!reviewRepository.existsById(id)) {
+                throw new BusinessException("This review does not exist");
+            }
+            return convertToDto(reviewRepository.findById(id).get());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         }
-        return convertToDto(reviewRepository.findById(id).get());
+
     }
 
     @Transactional

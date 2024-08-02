@@ -113,7 +113,7 @@ public class ReviewController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("This review does not exist");
             }
             UserModel user = userService.getUserByAuth();
-            if (user.getId() != review.get().getUser().getId()) {
+            if (!user.getId().equals(review.get().getUser().getId())) {
                 throw new BusinessException("You are not authorized to delete this review");
             }
 
