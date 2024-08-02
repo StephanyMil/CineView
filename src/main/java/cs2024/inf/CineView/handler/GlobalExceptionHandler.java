@@ -1,5 +1,8 @@
 package cs2024.inf.CineView.handler;
 
+import cs2024.inf.CineView.handler.BusinessException;
+import cs2024.inf.CineView.handler.NotFoundException;
+import cs2024.inf.CineView.handler.UnauthorizedException;
 import jakarta.annotation.Resource;
 import org.springframework.cglib.proxy.UndeclaredThrowableException;
 import org.springframework.context.MessageSource;
@@ -14,6 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
     @Resource
     private MessageSource messageSource;
 
@@ -32,7 +36,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    private ResponseEntity<Object> handleGeneral(Exception e, WebRequest request) {
+    public ResponseEntity<Object> handleGeneral(Exception e, WebRequest request) {
         if (e.getClass().isAssignableFrom(UndeclaredThrowableException.class)) {
             UndeclaredThrowableException exception = (UndeclaredThrowableException) e;
             return handleBusinessException((BusinessException) exception.getUndeclaredThrowable(), request);
@@ -44,9 +48,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({BusinessException.class})
-    private ResponseEntity<Object> handleBusinessException(BusinessException e, WebRequest request) {
+    public ResponseEntity<Object> handleBusinessException(BusinessException e, WebRequest request) {
         ResponseError error = responseError(e.getMessage(), HttpStatus.CONFLICT);
         return handleExceptionInternal(e, error, headers(), HttpStatus.CONFLICT, request);
     }
 
+    @ExceptionHandler({NotFoundException.class})
+    public ResponseEntity<Object> handleNotFoundException(NotFoundException e, WebRequest request) {
+        String message = messageSource.getMessage("error.notfound", new Object[]{e.getMessage()}, null);
+        ResponseError error = responseError(message, HttpStatus.NOT_FOUND);
+        return handleExceptionInternal(e, error, headers(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler({UnauthorizedException.class})
+    public ResponseEntity<Object> handleUnauthorizedException(UnauthorizedException e, WebRequest request) {
+        String message = messageSource.getMessage("error.unauthorized", new Object[]{e.getMessage()}, null);
+        ResponseError error = responseError(message, HttpStatus.UNAUTHORIZED);
+        return handleExceptionInternal(e, error, headers(), HttpStatus.UNAUTHORIZED, request);
+    }
 }

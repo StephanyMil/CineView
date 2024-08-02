@@ -2,6 +2,7 @@ package cs2024.inf.CineView.services;
 
 import cs2024.inf.CineView.dto.CommentDto;
 import cs2024.inf.CineView.dto.GenericPageableList;
+import cs2024.inf.CineView.handler.NotFoundException;
 import cs2024.inf.CineView.models.CommentModel;
 import cs2024.inf.CineView.models.ReviewModel;
 import cs2024.inf.CineView.models.UserModel;
@@ -35,7 +36,6 @@ public class CommentService {
         CommentModel commentModel = new CommentModel();
         commentModel.setText(commentDto.getText());
 
-        // Buscar usuário e review a partir dos IDs
         Optional<UserModel> user = userRepository.findById(commentDto.getUserId());
         Optional<ReviewModel> review = reviewRepository.findById(commentDto.getReviewId());
 
@@ -44,26 +44,26 @@ public class CommentService {
             commentModel.setReview(review.get());
             return commentRepository.save(commentModel);
         } else {
-            throw new RuntimeException("Usuário ou review não encontrados.");
+            throw new NotFoundException("User or review not found.");
         }
     }
 
     public CommentModel getCommentaryById(UUID id) {
-        Optional<CommentModel> commentModel = commentRepository.findById(id);
-        return commentModel.orElse(null);
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Comment not found."));
     }
 
     public CommentModel editCommentary(UUID id, CommentDto commentDto) {
-        Optional<CommentModel> commentModelOptional = commentRepository.findById(id);
-        if (commentModelOptional.isPresent()) {
-            CommentModel commentModel = commentModelOptional.get();
-            commentModel.setText(commentDto.getText());
-            return commentRepository.save(commentModel);
-        }
-        return null;
+        CommentModel commentModel = commentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Comment not found."));
+        commentModel.setText(commentDto.getText());
+        return commentRepository.save(commentModel);
     }
 
     public void deleteCommentary(UUID id) {
+        if (!commentRepository.existsById(id)) {
+            throw new NotFoundException("Comment not found.");
+        }
         commentRepository.deleteById(id);
     }
 
