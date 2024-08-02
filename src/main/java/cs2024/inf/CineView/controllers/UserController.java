@@ -117,7 +117,7 @@ public class UserController {
         try {
             Optional<UserModel> userFound = userRepository.findById(id);
             if (userFound.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not authorized.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
             }
 
             UserModel user = userFound.get();
@@ -131,7 +131,6 @@ public class UserController {
             userDto.setFollowing(user.getFollowing().stream().map(UserModel::getId).collect(Collectors.toSet()));
 
             List<FilmListDto> filmListDtos = filmListService.findFilmListsByUserId(user.getId());
-
             userDto.setFilmLists(filmListDtos);
 
             return ResponseEntity.status(HttpStatus.OK).body(userDto);
@@ -147,7 +146,7 @@ public class UserController {
         try {
             Optional<UserModel> userFound = userRepository.findById(id);
             if (userFound.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not authorized.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
             }
 
             UserModel userModel = userFound.get();
@@ -196,7 +195,7 @@ public class UserController {
         try {
             Optional<UserModel> userFound = userRepository.findById(id);
             if (userFound.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not authorized.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
             }
             userRepository.delete(userFound.get());
             return ResponseEntity.status(HttpStatus.OK).body("User successfully deleted");
