@@ -2,6 +2,8 @@ package cs2024.inf.CineView.controllers;
 
 import cs2024.inf.CineView.dto.CommentDto;
 import cs2024.inf.CineView.dto.GenericPageableList;
+import cs2024.inf.CineView.handler.NotFoundException;
+import cs2024.inf.CineView.handler.UnauthorizedException;
 import cs2024.inf.CineView.models.CommentModel;
 import cs2024.inf.CineView.models.UserModel;
 import cs2024.inf.CineView.repository.UserRepository;
@@ -35,7 +37,7 @@ public class CommentController {
         String userEmail = getAuthenticatedUserEmail();
         Optional<UserModel> userOptional = userRepository.findByEmail(userEmail);
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            throw new UnauthorizedException("User not authorized.");
         }
         commentDto.setUserId(userOptional.get().getId());
         CommentModel commentModel = commentService.createCommentary(commentDto);
@@ -53,7 +55,7 @@ public class CommentController {
     public ResponseEntity<CommentDto> getCommentaryById(@PathVariable UUID id) {
         CommentModel commentary = commentService.getCommentaryById(id);
         if (commentary == null) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException("Comment not found.");
         }
         CommentDto commentDto = new CommentDto(commentary);
         return new ResponseEntity<>(commentDto, HttpStatus.OK);
@@ -64,11 +66,11 @@ public class CommentController {
         String userEmail = getAuthenticatedUserEmail();
         Optional<UserModel> userOptional = userRepository.findByEmail(userEmail);
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            throw new UnauthorizedException("User not authorized.");
         }
         CommentModel existingComment = commentService.getCommentaryById(id);
         if (existingComment == null || !existingComment.getUser().getId().equals(userOptional.get().getId())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized to edit this comment.");
+            throw new UnauthorizedException("User not authorized to edit this comment.");
         }
         commentDto.setUserId(userOptional.get().getId());
         CommentModel commentModel = commentService.editCommentary(id, commentDto);
@@ -81,11 +83,11 @@ public class CommentController {
         String userEmail = getAuthenticatedUserEmail();
         Optional<UserModel> userOptional = userRepository.findByEmail(userEmail);
         if (userOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            throw new UnauthorizedException("User not authorized.");
         }
         CommentModel existingComment = commentService.getCommentaryById(id);
         if (existingComment == null || !existingComment.getUser().getId().equals(userOptional.get().getId())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized to delete this comment.");
+            throw new UnauthorizedException("User not authorized to delete this comment.");
         }
         commentService.deleteCommentary(id);
         return ResponseEntity.noContent().build();
@@ -97,5 +99,20 @@ public class CommentController {
             throw new SecurityException("User not authenticated");
         }
         return authentication.getName();
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<String> handleNotFoundException(NotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<String> handleUnauthorizedException(UnauthorizedException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGeneralException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
     }
 }

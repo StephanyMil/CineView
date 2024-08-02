@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -31,36 +32,50 @@ public class ReportController {
         this.reportService = reportService;
     }
 
-    @PostMapping("/review/{userId}/{reviewId}")
-    public ResponseEntity<Object> reportReview(@PathVariable UUID userId, @PathVariable Long reviewId, @Valid @RequestBody ReportDto reportDto) {
-        String loggedInUserEmail = getAuthenticatedUserEmail();
-        Optional<UserModel> loggedInUserOptional = userRepository.findByEmail(loggedInUserEmail);
+    @PostMapping("/review/{reviewId}")
+    public ResponseEntity<Object> reportReview(@PathVariable Long reviewId, @Valid @RequestBody ReportDto reportDto) {
+        try {
+            String loggedInUserEmail = getAuthenticatedUserEmail();
+            Optional<UserModel> loggedInUserOptional = userRepository.findByEmail(loggedInUserEmail);
 
-        if (loggedInUserOptional.isEmpty() || !loggedInUserOptional.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            if (loggedInUserOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            }
+
+            UserModel loggedInUser = loggedInUserOptional.get();
+            Object reportDtoSaved = reportService.saveReport(loggedInUser.getId(), reviewId, null, reportDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(reportDtoSaved);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-
-        Object reportDtoSaved = reportService.saveReport(userId, reviewId, null, reportDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(reportDtoSaved);
     }
 
-    @PostMapping("/comment/{userId}/{commentId}")
-    public ResponseEntity<Object> reportComment(@PathVariable UUID userId, @PathVariable UUID commentId, @Valid @RequestBody ReportDto reportDto) {
-        String loggedInUserEmail = getAuthenticatedUserEmail();
-        Optional<UserModel> loggedInUserOptional = userRepository.findByEmail(loggedInUserEmail);
+    @PostMapping("/comment/{commentId}")
+    public ResponseEntity<Object> reportComment(@PathVariable UUID commentId, @Valid @RequestBody ReportDto reportDto) {
+        try {
+            String loggedInUserEmail = getAuthenticatedUserEmail();
+            Optional<UserModel> loggedInUserOptional = userRepository.findByEmail(loggedInUserEmail);
 
-        if (loggedInUserOptional.isEmpty() || !loggedInUserOptional.get().getId().equals(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            if (loggedInUserOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authorized.");
+            }
+
+            UserModel loggedInUser = loggedInUserOptional.get();
+            Object reportDtoSaved = reportService.saveReport(loggedInUser.getId(), null, commentId, reportDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(reportDtoSaved);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-
-        Object reportDtoSaved = reportService.saveReport(userId, null, commentId, reportDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(reportDtoSaved);
     }
 
-    @GetMapping("{userId}")
+    @GetMapping
     public ResponseEntity<GenericPageableList> listReports(@RequestParam(value = "page", defaultValue = "0") int page,
                                                            @RequestParam(value = "size", defaultValue = "10") int size) {
-        return ResponseEntity.status(HttpStatus.OK).body(reportService.listReports(PageRequest.of(page, size)));
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(reportService.listReports(PageRequest.of(page, size)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     private String getAuthenticatedUserEmail() {
@@ -69,5 +84,11 @@ public class ReportController {
             throw new SecurityException("User not authenticated");
         }
         return authentication.getName();
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<String> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        String errorMessage = String.format("Failed to convert '%s' with value '%s'", ex.getName(), ex.getValue());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
 }
